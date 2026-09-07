@@ -18,7 +18,6 @@ import {
   Check,
   Navigation,
   MessageCircle,
-  Send,
 } from 'lucide-react';
 
 // ==================== DATA CONFIGURATION ====================
@@ -515,11 +514,20 @@ export default function WeddingInvitation() {
   };
 
   // Send Congratulations directly to groom's WhatsApp
-  const handleSendCongratulations = () => {
+  const handleSendGroomCongratulations = () => {
     const phoneNumber = '201270080682';
     const message = isAr
-      ? 'ألف مبروك يا عريسنا الغالي محمد ويا عروستنا ندى! 💍🎉 بارك الله لكما وبارك عليكما وجمع بينكما في خير، ودامت دياركم عامرة بالأفراح والمسرات 🤍✨'
-      : 'Dearest Mohamed & Nada! 💍 Huge congratulations on your wedding! Wishing you a lifetime of love, joy, and blessings 🤍';
+      ? 'ألف مبروك يا عريسنا الغالي محمد! 💍🎉 بارك الله لكما وبارك عليكما وجمع بينكما في خير، ودامت دياركم عامرة بالأفراح والمسرات 🤍✨'
+      : 'Dearest Mohamed! 💍 Huge congratulations on your wedding! Wishing you and Nada a lifetime of happiness and blessings 🤍';
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  // Send Congratulations directly to bride's WhatsApp
+  const handleSendBrideCongratulations = () => {
+    const phoneNumber = '201200473273';
+    const message = isAr
+      ? 'ألف مبروك يا أحلى عروسة ندى! 👰🏻‍♀️🌸 بارك الله لكما وبارك عليكما وجمع بينكما في خير، وجعل أيامكم كلها حب وسعادة وهنا 🤍✨'
+      : 'Dearest Nada! 👰🏻‍♀️ Warmest congratulations on your wedding! Wishing you and Mohamed a lifetime of endless joy and love 🌸✨';
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -1255,19 +1263,30 @@ export default function WeddingInvitation() {
 
             <p className="text-xs md:text-sm text-[#5E5E5C] max-w-md mx-auto leading-relaxed mb-6">
               {isAr
-                ? 'اضغط على الزر لكتابة تهنئتك ومباركتك مباشرة عبر واتساب للعريس (محمد)'
-                : 'Click below to send your warm wishes directly via WhatsApp to the groom (Mohamed)'}
+                ? 'اضغط لاختيار إرسال تهنئتك ومباركتك مباشرة عبر واتساب للعريس أو العروسة'
+                : 'Choose below to send your warm wishes directly via WhatsApp to the groom or bride'}
             </p>
 
-            {/* Big WhatsApp Congratulations Button */}
-            <button
-              onClick={handleSendCongratulations}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba59] hover:to-[#0f7569] text-white font-bold text-sm md:text-base shadow-lg shadow-[#25D366]/30 hover:scale-105 active:scale-95 transition-all duration-200"
-            >
-              <MessageCircle className="w-5 h-5 fill-current" />
-              <span>{isAr ? 'إرسال تهنئة عبر واتساب 💬' : 'Send Wishes via WhatsApp 💬'}</span>
-              <Send className="w-4 h-4 rtl:rotate-180" />
-            </button>
+            {/* WhatsApp Congratulations Buttons (Groom & Bride) */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
+              {/* Groom Button */}
+              <button
+                onClick={handleSendGroomCongratulations}
+                className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#128C7E] to-[#25D366] hover:from-[#0e6f64] hover:to-[#1eb855] text-white font-bold text-xs md:text-sm shadow-md shadow-[#25D366]/25 hover:scale-105 active:scale-95 transition-all duration-200"
+              >
+                <MessageCircle className="w-4 h-4 fill-current shrink-0" />
+                <span>{isAr ? 'تهنئة العريس (محمد) 🤵🏻‍♂️' : 'Groom (Mohamed) 🤵🏻‍♂️'}</span>
+              </button>
+
+              {/* Bride Button */}
+              <button
+                onClick={handleSendBrideCongratulations}
+                className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#B84758] via-[#D45D79] to-[#25D366] hover:from-[#9c3645] hover:to-[#1eb855] text-white font-bold text-xs md:text-sm shadow-md shadow-[#B84758]/25 hover:scale-105 active:scale-95 transition-all duration-200"
+              >
+                <MessageCircle className="w-4 h-4 fill-current shrink-0" />
+                <span>{isAr ? 'تهنئة العروسة (ندى) 👰🏻‍♀️' : 'Bride (Nada) 👰🏻‍♀️'}</span>
+              </button>
+            </div>
           </motion.div>
         </section>
 
