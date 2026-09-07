@@ -19,9 +19,6 @@ import {
   Navigation,
   MessageCircle,
   Send,
-  ChevronsDown,
-  Pause,
-  Play,
 } from 'lucide-react';
 
 // ==================== DATA CONFIGURATION ====================
