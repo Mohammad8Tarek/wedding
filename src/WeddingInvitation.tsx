@@ -481,77 +481,48 @@ export default function WeddingInvitation() {
     }
   }, []);
 
-  // Smooth Audio Playback & Fade-In (0.0 to 0.55 over 2.5s in 50ms steps)
-  const startAudioFadeIn = useCallback(() => {
+  // Play Audio Immediately on envelope open (audible right away at 0.65 volume)
+  const startAudio = useCallback(() => {
     if (!audioRef.current) return;
     clearAudioFade();
     removeUserGestureFallback();
 
-    audioRef.current.volume = 0;
+    audioRef.current.volume = 0.65;
     const playPromise = audioRef.current.play();
 
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
-          // If user paused or component unmounted while playPromise was resolving, abort
-          if (!audioRef.current || audioRef.current.paused) {
-            return;
-          }
-          // Cleanly clear any previous interval before starting a new one
-          clearAudioFade();
           setIsPlaying(true);
-
-          const targetVolume = 0.55;
-          const durationMs = 2500;
-          const stepIntervalMs = 50;
-          const stepIncrement = targetVolume / (durationMs / stepIntervalMs);
-
-          audioFadeIntervalRef.current = window.setInterval(() => {
-            if (!audioRef.current || audioRef.current.paused) {
-              clearAudioFade();
-              return;
-            }
-            const nextVol = audioRef.current.volume + stepIncrement;
-            if (nextVol >= targetVolume) {
-              audioRef.current.volume = targetVolume;
-              clearAudioFade();
-            } else {
-              audioRef.current.volume = Math.min(1, Math.max(0, nextVol));
-            }
-          }, stepIntervalMs);
         })
         .catch((err) => {
           setIsPlaying(false);
-          // Only attach fallback gesture listener if genuinely blocked by browser autoplay policy
-          if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
-            console.log('Audio autoplay prevented by browser policy:', err);
-            const handleFirstUserGesture = () => {
-              removeUserGestureFallback();
-              startAudioFadeIn();
-            };
-            userGestureFallbackRef.current = handleFirstUserGesture;
-            window.addEventListener('pointerdown', handleFirstUserGesture, { once: true });
-            window.addEventListener('click', handleFirstUserGesture, { once: true });
-            window.addEventListener('touchstart', handleFirstUserGesture, { once: true });
-          } else {
-            console.log('Audio playback paused or interrupted:', err?.name);
-          }
+          console.log('Audio autoplay prevented by browser policy:', err);
+          // Fallback: play on next user gesture anywhere on screen
+          const handleFirstUserGesture = () => {
+            removeUserGestureFallback();
+            if (audioRef.current) {
+              audioRef.current.volume = 0.65;
+              audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+            }
+          };
+          userGestureFallbackRef.current = handleFirstUserGesture;
+          window.addEventListener('pointerdown', handleFirstUserGesture, { once: true });
+          window.addEventListener('click', handleFirstUserGesture, { once: true });
+          window.addEventListener('touchstart', handleFirstUserGesture, { once: true });
         });
     }
   }, [clearAudioFade, removeUserGestureFallback]);
 
   // Clean up audio & timers on unmount
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0;
-    }
     return () => {
       clearAudioFade();
       removeUserGestureFallback();
     };
   }, [clearAudioFade, removeUserGestureFallback]);
 
-  // Audio Toggle Control (cleanly synchronizes mute/unmute and play/pause without double clicks)
+  // Audio Toggle Control
   const toggleAudio = useCallback(() => {
     if (!audioRef.current) return;
     clearAudioFade();
@@ -561,30 +532,20 @@ export default function WeddingInvitation() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      startAudioFadeIn();
+      startAudio();
     }
-  }, [isPlaying, clearAudioFade, removeUserGestureFallback, startAudioFadeIn]);
+  }, [isPlaying, clearAudioFade, removeUserGestureFallback, startAudio]);
 
-  // Open Envelope with 3D animation
+  // Open Envelope with 3D animation & instant audio playback
   const handleOpenEnvelope = useCallback(() => {
     if (isOpeningAnimation || isEnvelopeOpen) return;
     setIsOpeningAnimation(true);
-    startAudioFadeIn();
+    startAudio();
     window.scrollTo({ top: 0, behavior: 'instant' });
     setTimeout(() => {
       setIsEnvelopeOpen(true);
-    }, 1300);
-  }, [isOpeningAnimation, isEnvelopeOpen, startAudioFadeIn]);
-
-  // فتح الجواب تلقائياً بعد 3.5 ثانية إذا لم يلمس الضيف الختم
-  useEffect(() => {
-    if (!isEnvelopeOpen && !isOpeningAnimation) {
-      const autoTimer = setTimeout(() => {
-        handleOpenEnvelope();
-      }, 3500);
-      return () => clearTimeout(autoTimer);
-    }
-  }, [isEnvelopeOpen, isOpeningAnimation, handleOpenEnvelope]);
+    }, 1200);
+  }, [isOpeningAnimation, isEnvelopeOpen, startAudio]);
 
   // Share on WhatsApp
   const handleWhatsAppShare = () => {
@@ -1169,14 +1130,15 @@ export default function WeddingInvitation() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-7 text-center"
+                className="mt-7 text-center cursor-pointer"
+                onClick={handleOpenEnvelope}
               >
                 <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#260107]/90 backdrop-blur-md border border-[#D4AF37]/70 text-xs md:text-sm font-bold text-[#FFE885] shadow-[0_6px_25px_rgba(0,0,0,0.5)] hover:scale-105 transition-all">
                   <Heart className="w-4 h-4 text-[#FFDF73] fill-current animate-pulse" />
-                  <span>{isAr ? 'إلمس الختم الذهبي لفتح الدعوة الملكية ✨' : 'Touch the gold seal to open royal invitation ✨'}</span>
+                  <span>{isAr ? 'إلمس لفتح الجواب وتشغيل الأغنية 🎶✨' : 'Touch to open invitation & play music 🎶✨'}</span>
                 </div>
                 <p className="text-[#FFDF73]/85 text-[11px] mt-2 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                  {isAr ? '🎶 ستبدأ الموسيقى بهدوء وتتدرج تلقائياً عند فتح المظروف' : '🎶 Music will fade in smoothly upon opening'}
+                  {isAr ? '🎶 ستعمل الموسيقى فوراً عند فتح المظروف' : '🎶 Music plays immediately upon opening'}
                 </p>
               </motion.div>
             </div>
