@@ -18,6 +18,7 @@ import {
   Check,
   Navigation,
   MessageCircle,
+  Crown,
 } from 'lucide-react';
 
 // ==================== DATA CONFIGURATION ====================
@@ -704,10 +705,10 @@ export default function WeddingInvitation() {
                   style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
                   className="text-3xl md:text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#FFF4BD] via-[#FFDF73] to-[#D4AF37] drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]"
                 >
-                  {isAr ? 'حفل زفاف محمد & ندى' : 'Wedding of Mohamed & Nada'}
+                  {isAr ? 'دعـوة زفـاف خـاصـة' : 'Royal Wedding Invitation'}
                 </h2>
                 <p className="text-xs md:text-sm text-[#FFDF73]/90 mt-1 tracking-wider font-semibold drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                  {isAr ? 'الأحد، 11 أكتوبر 2026 • قاعة اسنو وايت' : 'Sunday, October 11, 2026 • Snow White Ballroom'}
+                  {isAr ? 'نتشرف بدعوتكم لحضور حفلنا الكريم' : 'Cordially invited to our special celebration'}
                 </p>
               </motion.div>
 
@@ -891,14 +892,6 @@ export default function WeddingInvitation() {
                         opacity: 0.75,
                       }}
                     />
-                    {/* Bottom Royal Monogram */}
-                    <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-1.5">
-                      <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
-                      <span className="text-[10px] tracking-[0.25em] font-bold text-[#FFDF73] uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                        M • N • 2026
-                      </span>
-                      <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
-                    </div>
                   </div>
 
                   {/* Royal Gold Velvet Silk Ribbon (Vertical) */}
@@ -1065,18 +1058,14 @@ export default function WeddingInvitation() {
                           />
                         </svg>
 
-                        {/* Stamped Arabic Calligraphy Initials "م & ن" with Dual-Light Debossed Relief */}
-                        <span
+                        {/* Stamped Royal Crown Emblem with Dual-Light Debossed Relief */}
+                        <Crown
+                          className="w-8 h-8 md:w-9 md:h-9 text-[#5C3E05] stroke-[2.2]"
                           style={{
-                            fontFamily: 'Amiri, serif',
-                            color: '#5C3E05',
-                            textShadow:
-                              '1px 1.5px 0px rgba(255, 248, 196, 0.95), -1px -1.5px 1.5px rgba(50, 30, 2, 0.95), 0 0 8px rgba(212, 175, 55, 0.35)',
+                            filter:
+                              'drop-shadow(1px 1.5px 0px rgba(255, 248, 196, 0.95)) drop-shadow(-1px -1.5px 1.5px rgba(50, 30, 2, 0.95)) drop-shadow(0 0 4px rgba(212, 175, 55, 0.35))',
                           }}
-                          className="text-2xl md:text-3xl font-extrabold leading-none select-none drop-shadow-sm"
-                        >
-                          م & ن
-                        </span>
+                        />
 
                         {/* Stamped Open Label */}
                         <div className="flex items-center gap-1 mt-0.5">
