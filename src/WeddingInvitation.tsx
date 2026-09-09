@@ -333,6 +333,8 @@ export default function WeddingInvitation() {
   const [activeImage, setActiveImage] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioFadeIntervalRef = useRef<number | null>(null);
+  const userGestureFallbackRef = useRef<(() => void) | null>(null);
   const autoScrollRef = useRef<number | null>(null);
 
   const isAr = language === 'ar';
@@ -427,7 +429,7 @@ export default function WeddingInvitation() {
     if (isEnvelopeOpen) {
       const scrollTimer = setTimeout(() => {
         startAutoScroll();
-      }, 500);
+      }, 700);
       return () => clearTimeout(scrollTimer);
     }
   }, [isEnvelopeOpen, startAutoScroll]);
@@ -461,31 +463,118 @@ export default function WeddingInvitation() {
     return () => clearInterval(interval);
   }, []);
 
-  // Audio Toggle
-  const toggleAudio = () => {
+  // Clear any active audio volume fade interval
+  const clearAudioFade = useCallback(() => {
+    if (audioFadeIntervalRef.current !== null) {
+      clearInterval(audioFadeIntervalRef.current);
+      audioFadeIntervalRef.current = null;
+    }
+  }, []);
+
+  // Remove one-time gesture listeners if active
+  const removeUserGestureFallback = useCallback(() => {
+    if (userGestureFallbackRef.current) {
+      window.removeEventListener('pointerdown', userGestureFallbackRef.current);
+      window.removeEventListener('click', userGestureFallbackRef.current);
+      window.removeEventListener('touchstart', userGestureFallbackRef.current);
+      userGestureFallbackRef.current = null;
+    }
+  }, []);
+
+  // Smooth Audio Playback & Fade-In (0.0 to 0.55 over 2.5s in 50ms steps)
+  const startAudioFadeIn = useCallback(() => {
     if (!audioRef.current) return;
+    clearAudioFade();
+    removeUserGestureFallback();
+
+    audioRef.current.volume = 0;
+    const playPromise = audioRef.current.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          // If user paused or component unmounted while playPromise was resolving, abort
+          if (!audioRef.current || audioRef.current.paused) {
+            return;
+          }
+          // Cleanly clear any previous interval before starting a new one
+          clearAudioFade();
+          setIsPlaying(true);
+
+          const targetVolume = 0.55;
+          const durationMs = 2500;
+          const stepIntervalMs = 50;
+          const stepIncrement = targetVolume / (durationMs / stepIntervalMs);
+
+          audioFadeIntervalRef.current = window.setInterval(() => {
+            if (!audioRef.current || audioRef.current.paused) {
+              clearAudioFade();
+              return;
+            }
+            const nextVol = audioRef.current.volume + stepIncrement;
+            if (nextVol >= targetVolume) {
+              audioRef.current.volume = targetVolume;
+              clearAudioFade();
+            } else {
+              audioRef.current.volume = Math.min(1, Math.max(0, nextVol));
+            }
+          }, stepIntervalMs);
+        })
+        .catch((err) => {
+          setIsPlaying(false);
+          // Only attach fallback gesture listener if genuinely blocked by browser autoplay policy
+          if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
+            console.log('Audio autoplay prevented by browser policy:', err);
+            const handleFirstUserGesture = () => {
+              removeUserGestureFallback();
+              startAudioFadeIn();
+            };
+            userGestureFallbackRef.current = handleFirstUserGesture;
+            window.addEventListener('pointerdown', handleFirstUserGesture, { once: true });
+            window.addEventListener('click', handleFirstUserGesture, { once: true });
+            window.addEventListener('touchstart', handleFirstUserGesture, { once: true });
+          } else {
+            console.log('Audio playback paused or interrupted:', err?.name);
+          }
+        });
+    }
+  }, [clearAudioFade, removeUserGestureFallback]);
+
+  // Clean up audio & timers on unmount
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0;
+    }
+    return () => {
+      clearAudioFade();
+      removeUserGestureFallback();
+    };
+  }, [clearAudioFade, removeUserGestureFallback]);
+
+  // Audio Toggle Control (cleanly synchronizes mute/unmute and play/pause without double clicks)
+  const toggleAudio = useCallback(() => {
+    if (!audioRef.current) return;
+    clearAudioFade();
+    removeUserGestureFallback();
+
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch((err) => console.log('Audio autoplay prevented:', err));
-      setIsPlaying(true);
+      startAudioFadeIn();
     }
-  };
+  }, [isPlaying, clearAudioFade, removeUserGestureFallback, startAudioFadeIn]);
 
   // Open Envelope with 3D animation
   const handleOpenEnvelope = useCallback(() => {
     if (isOpeningAnimation || isEnvelopeOpen) return;
     setIsOpeningAnimation(true);
-    if (audioRef.current && !isPlaying) {
-      audioRef.current.play().catch((err) => console.log('Audio error:', err));
-      setIsPlaying(true);
-    }
+    startAudioFadeIn();
     window.scrollTo({ top: 0, behavior: 'instant' });
     setTimeout(() => {
       setIsEnvelopeOpen(true);
-    }, 1100);
-  }, [isOpeningAnimation, isEnvelopeOpen, isPlaying]);
+    }, 1300);
+  }, [isOpeningAnimation, isEnvelopeOpen, startAudioFadeIn]);
 
   // فتح الجواب تلقائياً بعد 3.5 ثانية إذا لم يلمس الضيف الختم
   useEffect(() => {
@@ -587,28 +676,52 @@ export default function WeddingInvitation() {
       </nav>
 
       {/* ========================================================= */}
-      {/* ROMANTIC BLUSH & FLORAL ENVELOPE MODAL (الجواب الرومانسي البوهيمي) */}
+      {/* ROYAL VELVET & GOLD ENVELOPE MODAL (الجواب الملكي المخملي والذهبي) */}
       {/* ========================================================= */}
       <AnimatePresence>
         {!isEnvelopeOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05, transition: { duration: 0.8, ease: 'easeInOut' } }}
+            exit={{ opacity: 0, scale: 1.05, transition: { duration: 0.7, ease: 'easeInOut' } }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-hidden"
           >
-            {/* Romantic Floral Flat-Lay Background */}
+            {/* Royal Deep Burgundy / Wine Velvet Backdrop */}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-100"
+              className="absolute inset-0 transition-transform duration-1000 scale-100"
               style={{
-                backgroundImage: 'url(/blush-floral-bg.jpg)',
-                filter: 'brightness(0.92) contrast(1.03)',
+                background: 'radial-gradient(ellipse at 50% 45%, #4E0513 0%, #3B020B 35%, #260107 70%, #150004 100%)',
               }}
             />
 
-            {/* Soft Ambient Vignette Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#2A0E14]/40 via-transparent to-[#2A0E14]/30 pointer-events-none" />
-            <div className="absolute inset-0 backdrop-blur-[1px] bg-rose-950/10 pointer-events-none" />
+            {/* Subtle Gold Ambient Particle / Shimmer Backdrop Overlays */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-40"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 20% 25%, rgba(255, 223, 115, 0.22) 0%, transparent 40%), ' +
+                  'radial-gradient(circle at 80% 75%, rgba(212, 175, 55, 0.2) 0%, transparent 45%), ' +
+                  'radial-gradient(circle at 50% 15%, rgba(255, 245, 185, 0.18) 0%, transparent 35%), ' +
+                  'radial-gradient(circle at 30% 85%, rgba(170, 119, 28, 0.22) 0%, transparent 50%)',
+              }}
+            />
+
+            {/* Micro Velvet Texture Stipple */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-20"
+              style={{
+                backgroundImage: 'radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 1px)',
+                backgroundSize: '20px 20px',
+              }}
+            />
+
+            {/* Deep Vignette Shadow Overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                boxShadow: 'inset 0 0 140px rgba(10, 0, 3, 0.88), inset 0 0 40px rgba(0, 0, 0, 0.7)',
+              }}
+            />
 
             <div className="relative w-full max-w-lg flex flex-col items-center z-10">
               {/* Header Title */}
@@ -618,21 +731,21 @@ export default function WeddingInvitation() {
                 transition={{ duration: 0.6 }}
                 className="text-center mb-6"
               >
-                <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#D4AF37]/50 mb-2.5 shadow-md">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-spin" style={{ animationDuration: '4s' }} />
-                  <span className="text-[11px] font-bold text-[#735C00] tracking-widest uppercase">
+                <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#260107]/85 backdrop-blur-md border border-[#D4AF37]/60 mb-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.5)]">
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73] animate-spin" style={{ animationDuration: '4s' }} />
+                  <span className="text-[11px] font-bold text-[#FFE885] tracking-widest uppercase">
                     {isAr ? 'بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ' : 'In The Name of God'}
                   </span>
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] animate-spin" style={{ animationDuration: '4s' }} />
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73] animate-spin" style={{ animationDuration: '4s' }} />
                 </div>
 
                 <h2
                   style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                  className="text-3xl md:text-4xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+                  className="text-3xl md:text-4xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#FFF4BD] via-[#FFDF73] to-[#D4AF37] drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)]"
                 >
                   {isAr ? 'حفل زفاف محمد & ندى' : 'Wedding of Mohamed & Nada'}
                 </h2>
-                <p className="text-xs md:text-sm text-[#FFE699] mt-1 tracking-wider font-semibold drop-shadow">
+                <p className="text-xs md:text-sm text-[#FFDF73]/90 mt-1 tracking-wider font-semibold drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                   {isAr ? 'الأحد، 11 أكتوبر 2026 • قاعة اسنو وايت' : 'Sunday, October 11, 2026 • Snow White Ballroom'}
                 </p>
               </motion.div>
@@ -659,132 +772,195 @@ export default function WeddingInvitation() {
                   style={{
                     transformStyle: 'preserve-3d',
                     boxShadow:
-                      '0 30px 60px -12px rgba(45, 10, 18, 0.6), 0 0 35px rgba(220, 160, 170, 0.3)',
+                      '0 32px 64px -12px rgba(18, 1, 4, 0.85), 0 0 40px rgba(212, 175, 55, 0.25)',
                   }}
                 >
-                  {/* Outer Rose-Gold Metallic Border Frame */}
-                  <div className="absolute -inset-[2px] rounded-[26px] bg-gradient-to-b from-[#E8B4B8] via-[#D4AF37] to-[#E8B4B8] opacity-90 z-0 shadow-sm" />
+                  {/* Outer Gold Leaf Border Piping Frame */}
+                  <div
+                    className="absolute -inset-[2px] rounded-[26px] z-0 shadow-md"
+                    style={{
+                      background: 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%)',
+                    }}
+                  />
 
-                  {/* Envelope Base / Backplate (Blush Linen Texture) */}
+                  {/* Envelope Base / Backplate (Royal Burgundy Velvet Cardstock) */}
                   <div
                     className="absolute inset-0 rounded-[24px] overflow-hidden z-0"
                     style={{
-                      background: 'radial-gradient(circle at 50% 30%, #FFF9F6 0%, #F8ECE6 70%, #EEDCD3 100%)',
+                      background: 'radial-gradient(ellipse at 50% 35%, #5C0B1B 0%, #4E0513 40%, #3B020B 75%, #260107 100%)',
                     }}
                   >
-                    {/* Interior Floral Watercolor Lining Pattern */}
+                    {/* Simulated Velvet Pile Radial Luster Overlay */}
                     <div
-                      className="absolute inset-0 opacity-25 pointer-events-none"
+                      className="absolute inset-0 pointer-events-none"
                       style={{
-                        backgroundImage: `radial-gradient(#9E3B4D 1.5px, transparent 1.5px), radial-gradient(#D4AF37 1.5px, #FFF9F6 1.5px)`,
-                        backgroundSize: '22px 22px',
-                        backgroundPosition: '0 0, 11px 11px',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.09) 0%, transparent 40%, rgba(212,175,55,0.06) 65%, rgba(0,0,0,0.45) 100%)',
+                      }}
+                    />
+                    {/* Delicate Gold Arabesque Stipple in Velvet Interior */}
+                    <div
+                      className="absolute inset-0 opacity-15 pointer-events-none"
+                      style={{
+                        backgroundImage: `radial-gradient(#FFDF73 1px, transparent 1px)`,
+                        backgroundSize: '18px 18px',
                       }}
                     />
                   </div>
 
-                  {/* THE INVITATION CARD INSIDE (Slides UP on open) */}
+                  {/* THE INVITATION CARD INSIDE (Warm Royal Ivory, Slides UP on open) */}
                   <motion.div
                     animate={
                       isOpeningAnimation
-                        ? { y: -125, opacity: 1, scale: 1.03 }
+                        ? { y: -140, opacity: 1, scale: 1.04 }
                         : { y: 0, opacity: 0.94 }
                     }
                     transition={{ duration: 0.85, delay: 0.35, ease: [0.25, 1, 0.5, 1] }}
-                    className="absolute inset-x-5 top-5 bottom-3 rounded-xl bg-white border-2 border-[#D4AF37] shadow-lg flex flex-col items-center justify-center p-4 text-center z-10 overflow-hidden"
+                    className="absolute inset-x-5 top-5 bottom-3 rounded-xl shadow-xl flex flex-col items-center justify-center p-4 text-center z-10 overflow-hidden"
                     style={{
-                      background: 'linear-gradient(180deg, #FFFFFF 0%, #FAF5F2 100%)',
+                      background: 'linear-gradient(180deg, #FFFDF7 0%, #FAF6EE 55%, #F3EBDD 100%)',
+                      border: '2px solid #D4AF37',
+                      boxShadow: '0 12px 30px rgba(0,0,0,0.35), inset 0 0 15px rgba(212,175,55,0.12)',
                     }}
                   >
-                    <div className="w-full h-full border border-[#D4AF37]/40 rounded-lg p-3 flex flex-col items-center justify-between relative">
-                      <div className="flex items-center gap-1.5 text-[#D4AF37]">
-                        <span className="w-6 h-[1px] bg-[#D4AF37]" />
-                        <Heart className="w-2.5 h-2.5 fill-current" />
-                        <span className="w-6 h-[1px] bg-[#D4AF37]" />
+                    {/* Inner Gold Inset Frame with Flourishes */}
+                    <div className="w-full h-full border border-[#D4AF37]/60 rounded-lg p-3 flex flex-col items-center justify-between relative bg-[#FFFDF7]/60">
+                      {/* Top Ornate Bar */}
+                      <div className="flex items-center gap-2 text-[#AA771C]">
+                        <span className="w-7 h-[1px] bg-gradient-to-r from-transparent to-[#AA771C]" />
+                        <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                        <span className="w-7 h-[1px] bg-gradient-to-l from-transparent to-[#AA771C]" />
                       </div>
+
+                      {/* Card Content */}
                       <div>
                         <span className="text-[10px] uppercase tracking-[0.25em] text-[#8C7326] font-bold block mb-1">
                           {isAr ? 'دعوة زفاف خاصة' : 'Wedding Invitation'}
                         </span>
                         <h3
                           style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                          className="text-2xl md:text-3xl font-extrabold text-[#735C00] leading-none"
+                          className="text-2xl md:text-3xl font-extrabold text-[#4E0513] leading-tight"
                         >
                           {isAr ? 'محمد & ندى' : 'Mohamed & Nada'}
                         </h3>
-                        <p className="text-[11px] text-[#5E5E5C] mt-1 font-semibold">
-                          {isAr ? '11 أكتوبر 2026 • قاعة اسنو وايت' : 'October 11, 2026 • Snow White'}
-                        </p>
+                        <div className="flex items-center justify-center gap-1.5 mt-1 text-[#8C7326]">
+                          <Heart className="w-2.5 h-2.5 fill-[#AA771C] text-[#AA771C]" />
+                          <p className="text-[11px] font-semibold text-[#5C3E05]">
+                            {isAr ? '11 أكتوبر 2026 • قاعة اسنو وايت' : 'October 11, 2026 • Snow White'}
+                          </p>
+                          <Heart className="w-2.5 h-2.5 fill-[#AA771C] text-[#AA771C]" />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[#D4AF37]">
-                        <span className="w-6 h-[1px] bg-[#D4AF37]" />
-                        <Heart className="w-2.5 h-2.5 fill-current" />
-                        <span className="w-6 h-[1px] bg-[#D4AF37]" />
+
+                      {/* Bottom Ornate Bar */}
+                      <div className="flex items-center gap-2 text-[#AA771C]">
+                        <span className="w-7 h-[1px] bg-gradient-to-r from-transparent to-[#AA771C]" />
+                        <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                        <span className="w-7 h-[1px] bg-gradient-to-l from-transparent to-[#AA771C]" />
                       </div>
                     </div>
                   </motion.div>
 
-                  {/* Front Pocket Left Flap */}
+                  {/* Front Pocket Left Velvet Flap */}
                   <div
                     className="absolute inset-0 pointer-events-none z-20"
                     style={{
                       clipPath: 'polygon(0 0, 0 100%, 50% 50%)',
-                      background: 'linear-gradient(135deg, #FAF4EF 0%, #EFE1D8 100%)',
-                      filter: 'drop-shadow(3px 0 5px rgba(0,0,0,0.06))',
-                      borderLeft: '1px solid rgba(212, 175, 55, 0.3)',
+                      background: 'linear-gradient(135deg, #4E0513 0%, #3B020B 60%, #260107 100%)',
+                      filter: 'drop-shadow(4px 0 8px rgba(0,0,0,0.45))',
                     }}
-                  />
+                  >
+                    {/* Left Flap Velvet Luster & Piping */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
+                      }}
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        clipPath: 'polygon(0 0, 50% 50%, 0 100%, 0 98%, 48% 50%, 0 2%)',
+                        background: 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 50%, #AA771C 100%)',
+                        opacity: 0.6,
+                      }}
+                    />
+                  </div>
 
-                  {/* Front Pocket Right Flap */}
+                  {/* Front Pocket Right Velvet Flap */}
                   <div
                     className="absolute inset-0 pointer-events-none z-20"
                     style={{
                       clipPath: 'polygon(100% 0, 100% 100%, 50% 50%)',
-                      background: 'linear-gradient(225deg, #FAF4EF 0%, #EFE1D8 100%)',
-                      filter: 'drop-shadow(-3px 0 5px rgba(0,0,0,0.06))',
-                      borderRight: '1px solid rgba(212, 175, 55, 0.3)',
+                      background: 'linear-gradient(225deg, #4E0513 0%, #3B020B 60%, #260107 100%)',
+                      filter: 'drop-shadow(-4px 0 8px rgba(0,0,0,0.45))',
                     }}
-                  />
+                  >
+                    {/* Right Flap Velvet Luster & Piping */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
+                      }}
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        clipPath: 'polygon(100% 0, 50% 50%, 100% 100%, 100% 98%, 52% 50%, 100% 2%)',
+                        background: 'linear-gradient(225deg, #BF953F 0%, #FCF6BA 50%, #AA771C 100%)',
+                        opacity: 0.6,
+                      }}
+                    />
+                  </div>
 
-                  {/* Front Pocket Bottom Flap */}
+                  {/* Front Pocket Bottom Velvet Flap */}
                   <div
                     className="absolute inset-0 pointer-events-none z-20"
                     style={{
                       clipPath: 'polygon(0 100%, 100% 100%, 50% 45%)',
-                      background: 'linear-gradient(0deg, #EFE1D8 0%, #E5D3C8 100%)',
-                      filter: 'drop-shadow(0 -3px 6px rgba(0,0,0,0.08))',
-                      borderBottom: '1px solid rgba(212, 175, 55, 0.4)',
+                      background: 'linear-gradient(0deg, #260107 0%, #3B020B 40%, #4E0513 100%)',
+                      filter: 'drop-shadow(0 -4px 10px rgba(0,0,0,0.5))',
                     }}
                   >
-                    {/* Bottom Botanical Emblem */}
-                    <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center">
-                      <span className="text-[10px] tracking-[0.25em] font-bold text-[#8C7326] uppercase opacity-75">
+                    {/* Gold Leaf Chevron Border Piping on Bottom Flap */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        clipPath: 'polygon(0 100%, 100% 100%, 50% 45%, 49% 47%, 98% 99%, 2% 99%)',
+                        background: 'linear-gradient(90deg, #D4AF37 0%, #FFDF73 50%, #AA771C 100%)',
+                        opacity: 0.75,
+                      }}
+                    />
+                    {/* Bottom Royal Monogram */}
+                    <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-1.5">
+                      <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
+                      <span className="text-[10px] tracking-[0.25em] font-bold text-[#FFDF73] uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                         M • N • 2026
                       </span>
+                      <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
                     </div>
                   </div>
 
-                  {/* Silk Chiffon Blush Ribbon (Vertical) */}
+                  {/* Royal Gold Velvet Silk Ribbon (Vertical) */}
                   <motion.div
                     animate={{ opacity: isOpeningAnimation ? 0 : 1 }}
                     transition={{ duration: 0.4 }}
                     className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-9 pointer-events-none z-25"
                     style={{
                       background:
-                        'linear-gradient(90deg, #D49B9E 0%, #F5D3D6 30%, #FFF2F4 50%, #F5D3D6 70%, #C98A8E 100%)',
-                      boxShadow: '0 0 10px rgba(0,0,0,0.18), inset 0 0 2px rgba(255,255,255,0.7)',
+                        'linear-gradient(90deg, #8A6412 0%, #D4AF37 20%, #FFF3B0 50%, #D4AF37 80%, #8A6412 100%)',
+                      boxShadow: '0 0 12px rgba(0,0,0,0.4), inset 0 0 3px rgba(255,255,255,0.6)',
                     }}
                   >
-                    <div className="w-full h-full opacity-35 border-x border-white/60" />
+                    <div className="w-full h-full opacity-40 border-x border-[#FFFDF7]" />
                   </motion.div>
 
-                  {/* TOP FLAP (3D Animated Flap) */}
+                  {/* TOP FLAP (3D Animated Flap with rotateX: -180 revealing Royal Ivory lining) */}
                   <motion.div
                     animate={{
                       rotateX: isOpeningAnimation ? -180 : 0,
                     }}
                     transition={{
-                      duration: 0.65,
+                      duration: 0.7,
                       ease: [0.4, 0, 0.2, 1],
                     }}
                     style={{
@@ -794,76 +970,195 @@ export default function WeddingInvitation() {
                     }}
                     className="absolute inset-x-0 top-0 h-full pointer-events-none"
                   >
-                    {/* Flap Front Face */}
+                    {/* Flap Outer Front Face (Burgundy Velvet Cardstock) */}
                     <div
                       className="absolute inset-0"
                       style={{
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
                         clipPath: 'polygon(0 0, 100% 0, 50% 55%)',
-                        background: 'linear-gradient(180deg, #FCF7F3 0%, #F3E5DC 80%, #E9D7CC 100%)',
-                        filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.15))',
-                        borderTop: '2px solid rgba(212, 175, 55, 0.4)',
+                        background: 'linear-gradient(180deg, #5C0B1B 0%, #4E0513 50%, #3B020B 100%)',
+                        filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))',
                       }}
                     >
-                      {/* Rose Gold filigree chevron edge line */}
+                      {/* Gold Leaf Piping on Chevron Edges */}
                       <div
                         className="absolute inset-0"
                         style={{
                           clipPath: 'polygon(0 0, 100% 0, 50% 55%, 50% 53%, 98% 2%, 2% 2%)',
-                          background: 'linear-gradient(90deg, #D4AF37, #FADBD8, #D4AF37)',
+                          background: 'linear-gradient(90deg, #D4AF37 0%, #FFDF73 50%, #AA771C 100%)',
                         }}
                       />
+                      {/* Directional Velvet Luster Sheen */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%, rgba(0,0,0,0.35) 100%)',
+                        }}
+                      />
+                    </div>
+
+                    {/* Flap Inner Lining Face (Warm Royal Ivory with Delicate Gold Filigree) */}
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        transform: 'rotateX(180deg)',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        clipPath: 'polygon(0 0, 100% 0, 50% 55%)',
+                        background: 'linear-gradient(180deg, #FFFDF7 0%, #FAF6EE 60%, #F0E6D2 100%)',
+                        filter: 'drop-shadow(0 -4px 12px rgba(0,0,0,0.4))',
+                      }}
+                    >
+                      {/* Inner Gold Leaf Chevron Piping */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          clipPath: 'polygon(0 0, 100% 0, 50% 55%, 50% 53%, 98% 2%, 2% 2%)',
+                          background: 'linear-gradient(90deg, #BF953F 0%, #FFDF73 50%, #AA771C 100%)',
+                        }}
+                      />
+                      {/* Delicate Royal Arabesque Gold Pattern */}
+                      <div
+                        className="absolute inset-0 opacity-25 pointer-events-none"
+                        style={{
+                          backgroundImage: `radial-gradient(#D4AF37 1.5px, transparent 1.5px), radial-gradient(#AA771C 1.5px, #FAF6EE 1.5px)`,
+                          backgroundSize: '16px 16px',
+                          backgroundPosition: '0 0, 8px 8px',
+                        }}
+                      />
+                      {/* Subtle Crest Ornament in Inner Flap */}
+                      <div className="absolute top-7 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-70">
+                        <Sparkles className="w-4 h-4 text-[#AA771C]" />
+                      </div>
                     </div>
                   </motion.div>
 
                   {/* ========================================================= */}
-                  {/* ROMANTIC DUSTY-ROSE 3D WAX SEAL (ختم الشمع الرومانسي) */}
+                  {/* ROYAL EMBOSSED MOLTEN GOLD WAX SEAL (ختم الشمع الذهبي الملكي) */}
                   {/* ========================================================= */}
                   <motion.div
                     animate={
                       isOpeningAnimation
-                        ? { scale: 1.35, opacity: 0, y: -20 }
+                        ? { scale: 1.35, opacity: 0, y: -25 }
                         : { scale: [1, 1.04, 1] }
                     }
                     transition={
                       isOpeningAnimation
                         ? { duration: 0.4, ease: 'easeOut' }
-                        : { repeat: Infinity, duration: 3, ease: 'easeInOut' }
+                        : { repeat: Infinity, duration: 3.5, ease: 'easeInOut' }
                     }
                     className="absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 cursor-pointer"
                   >
-                    <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
-                      {/* Outer Wax Irregular Melt Edge */}
+                    <div className="relative w-28 h-28 md:w-32 md:h-32 flex items-center justify-center">
+                      {/* Outer Wax Irregular Melt Rim in Molten Gold */}
                       <div
-                        className="absolute inset-0 rounded-full"
+                        className="absolute inset-0"
                         style={{
                           background:
-                            'radial-gradient(circle at 35% 30%, #B84758 0%, #8A2536 50%, #570F1D 85%, #380711 100%)',
+                            'radial-gradient(circle at 35% 32%, #FFF3B0 0%, #FFE885 20%, #E5BE58 45%, #C29629 70%, #8A6412 90%, #543904 100%)',
                           boxShadow:
-                            '0 12px 25px rgba(65, 10, 20, 0.55), inset 0 3px 6px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6)',
-                          borderRadius: '49% 51% 52% 48% / 51% 48% 52% 49%',
+                            '0 16px 36px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(78, 5, 19, 0.5), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -6px 12px rgba(84, 57, 4, 0.85)',
+                          borderRadius: '48% 52% 51% 49% / 52% 48% 52% 48%',
                         }}
                       />
 
-                      {/* Rose Gold Stamped Beaded Ring */}
-                      <div className="relative w-15 h-15 md:w-18 md:h-18 rounded-full border-2 border-[#F7D2B8]/90 flex flex-col items-center justify-center shadow-inner bg-gradient-to-b from-[#7A1E2E] via-[#5C111F] to-[#400A14]">
-                        {/* Stamped Initials in Gold Foil Calligraphy */}
+                      {/* Inner Stamped Die Coin in Burnished Gold */}
+                      <div
+                        className="relative w-22 h-22 md:w-26 md:h-26 rounded-full flex flex-col items-center justify-center overflow-hidden"
+                        style={{
+                          background:
+                            'radial-gradient(circle at 40% 35%, #FFEBA3 0%, #E5BE58 35%, #C29629 70%, #946C13 100%)',
+                          boxShadow:
+                            'inset 0 3px 6px rgba(255, 255, 255, 0.85), inset 0 -4px 8px rgba(70, 45, 5, 0.9), 0 2px 6px rgba(0, 0, 0, 0.35)',
+                          border: '2px solid #AA771C',
+                        }}
+                      >
+                        {/* Concentric Beaded/Dotted Relief Border */}
+                        <svg
+                          className="absolute inset-1 w-[calc(100%-8px)] h-[calc(100%-8px)] pointer-events-none"
+                          viewBox="0 0 100 100"
+                        >
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="44"
+                            fill="none"
+                            stroke="#7A560C"
+                            strokeWidth="2.5"
+                            strokeDasharray="3.5 5"
+                            strokeLinecap="round"
+                            opacity="0.85"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="44"
+                            fill="none"
+                            stroke="#FFF9D6"
+                            strokeWidth="1.2"
+                            strokeDasharray="3.5 5"
+                            strokeLinecap="round"
+                            transform="translate(0.5, 0.5)"
+                            opacity="0.75"
+                          />
+                        </svg>
+
+                        {/* Stamped Arabic Calligraphy Initials "م & ن" with Dual-Light Debossed Relief */}
                         <span
-                          style={{ fontFamily: 'Amiri, serif' }}
-                          className="text-xl md:text-2xl font-bold leading-none text-[#FFF3D6] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                          style={{
+                            fontFamily: 'Amiri, serif',
+                            color: '#5C3E05',
+                            textShadow:
+                              '1px 1.5px 0px rgba(255, 248, 196, 0.95), -1px -1.5px 1.5px rgba(50, 30, 2, 0.95), 0 0 8px rgba(212, 175, 55, 0.35)',
+                          }}
+                          className="text-2xl md:text-3xl font-extrabold leading-none select-none drop-shadow-sm"
                         >
                           م & ن
                         </span>
+
+                        {/* Stamped Open Label */}
                         <div className="flex items-center gap-1 mt-0.5">
-                          <Sparkles className="w-2.5 h-2.5 text-[#F7D2B8]" />
-                          <span className="text-[8px] tracking-[0.2em] font-extrabold text-[#F7D2B8] uppercase">
+                          <Sparkles className="w-2.5 h-2.5 text-[#5C3E05]" />
+                          <span
+                            style={{
+                              color: '#5C3E05',
+                              textShadow: '0.5px 1px 0px rgba(255, 248, 196, 0.9), -0.5px -1px 1px rgba(50, 30, 2, 0.9)',
+                            }}
+                            className="text-[9px] tracking-[0.25em] font-extrabold uppercase"
+                          >
                             OPEN
                           </span>
-                          <Sparkles className="w-2.5 h-2.5 text-[#F7D2B8]" />
+                          <Sparkles className="w-2.5 h-2.5 text-[#5C3E05]" />
                         </div>
+
+                        {/* Specular Light Sweep Glistening Highlights */}
+                        <motion.div
+                          animate={{
+                            x: ['-140%', '140%'],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 3.2,
+                            ease: 'easeInOut',
+                            repeatDelay: 1.5,
+                          }}
+                          className="absolute inset-0 pointer-events-none rounded-full"
+                          style={{
+                            background:
+                              'linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.65) 48%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0.65) 52%, transparent 75%)',
+                            mixBlendMode: 'overlay',
+                          }}
+                        />
                       </div>
 
+                      {/* Glistening Micro-Sparkle Glint Accents */}
+                      <Sparkles className="absolute top-1.5 right-2 w-3.5 h-3.5 text-[#FFFBE0] animate-pulse pointer-events-none drop-shadow-[0_0_6px_rgba(255,245,185,0.9)]" />
+                      <Sparkles className="absolute bottom-2 left-2 w-2.5 h-2.5 text-[#FFFBE0] animate-pulse pointer-events-none drop-shadow-[0_0_6px_rgba(255,245,185,0.9)]" style={{ animationDelay: '1s' }} />
+
                       {/* Pulsing Beacon Ring */}
-                      <span className="absolute -inset-2 rounded-full border border-[#F7D2B8]/60 animate-ping pointer-events-none opacity-65" />
+                      <span className="absolute -inset-2.5 rounded-full border border-[#FFE885]/70 animate-ping pointer-events-none opacity-50" />
+                      <span className="absolute -inset-1 rounded-full border border-[#D4AF37]/50 pointer-events-none" />
                     </div>
                   </motion.div>
                 </motion.div>
@@ -876,12 +1171,12 @@ export default function WeddingInvitation() {
                 transition={{ delay: 0.3 }}
                 className="mt-7 text-center"
               >
-                <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/90 backdrop-blur-md border border-[#E8B4B8] text-xs md:text-sm font-bold text-[#7A1E2E] shadow-[0_6px_25px_rgba(122,30,46,0.25)] hover:scale-105 transition-all">
-                  <Heart className="w-4 h-4 text-[#B84758] fill-current animate-pulse" />
-                  <span>{isAr ? 'إلمس الختم الشمعي لفتح الدعوة 🌸' : 'Touch the seal to open 🌸'}</span>
+                <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#260107]/90 backdrop-blur-md border border-[#D4AF37]/70 text-xs md:text-sm font-bold text-[#FFE885] shadow-[0_6px_25px_rgba(0,0,0,0.5)] hover:scale-105 transition-all">
+                  <Heart className="w-4 h-4 text-[#FFDF73] fill-current animate-pulse" />
+                  <span>{isAr ? 'إلمس الختم الذهبي لفتح الدعوة الملكية ✨' : 'Touch the gold seal to open royal invitation ✨'}</span>
                 </div>
-                <p className="text-white/80 text-[11px] mt-2 font-medium drop-shadow">
-                  {isAr ? '🎶 ستعمل الموسيقى الاحتفالية عند فتح المظروف' : '🎶 Music will play automatically upon opening'}
+                <p className="text-[#FFDF73]/85 text-[11px] mt-2 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                  {isAr ? '🎶 ستبدأ الموسيقى بهدوء وتتدرج تلقائياً عند فتح المظروف' : '🎶 Music will fade in smoothly upon opening'}
                 </p>
               </motion.div>
             </div>

@@ -32,3 +32,6 @@ pnpm-debug.log*
 # Temporary files
 *.pdf
 tiktok_*.mpeg
+.agents/
+ORIGINAL_REQUEST.md
+scripts/
