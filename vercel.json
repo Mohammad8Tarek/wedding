@@ -1,4 +1,4 @@
-﻿{
+{
   "rewrites": [
     {
       "source": "/(.*)",
@@ -16,7 +16,7 @@
       ]
     },
     {
-      "source": "/(wedding-preview.jpg|og-image.jpg)",
+      "source": "/wedding-preview.jpg",
       "headers": [
         {
           "key": "Cache-Control",
