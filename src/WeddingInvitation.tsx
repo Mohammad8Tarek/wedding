@@ -1592,7 +1592,7 @@ export default function WeddingInvitation() {
                 className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#128C7E] to-[#25D366] hover:from-[#0e6f64] hover:to-[#1eb855] text-white font-bold text-xs md:text-sm shadow-md shadow-[#25D366]/25 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 <MessageCircle className="w-4 h-4 fill-current shrink-0" />
-                <span>{isAr ? 'تهنئة العريس (محمد) 🤵🏻‍♂️' : 'Groom (Mohamed) 🤵🏻‍♂️'}</span>
+                <span>{isAr ? 'تهنئة العريس 🤵🏻‍♂️' : 'Congratulate Groom 🤵🏻‍♂️'}</span>
               </button>
 
               {/* Bride Button */}
@@ -1601,7 +1601,7 @@ export default function WeddingInvitation() {
                 className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-gradient-to-r from-[#B84758] via-[#D45D79] to-[#25D366] hover:from-[#9c3645] hover:to-[#1eb855] text-white font-bold text-xs md:text-sm shadow-md shadow-[#B84758]/25 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 <MessageCircle className="w-4 h-4 fill-current shrink-0" />
-                <span>{isAr ? 'تهنئة العروسة (ندى) 👰🏻‍♀️' : 'Bride (Nada) 👰🏻‍♀️'}</span>
+                <span>{isAr ? 'تهنئة العروسة 👰🏻‍♀️' : 'Congratulate Bride 👰🏻‍♀️'}</span>
               </button>
             </div>
           </motion.div>
