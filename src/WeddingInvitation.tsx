@@ -88,49 +88,47 @@ const EVENTS_DATA: EventDetail[] = [
   },
 ];
 
-// معرض صور العروسين - الصور تُقرأ من مجلد public/images/
+// معرض صور العروسين الحقيقية - من مجلد public/images/
 const GALLERY_IMAGES = [
   {
     id: 1,
     url: '/images/1.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'لحظات البداية',
-    titleEn: 'The Beginning',
+    titleAr: 'عهد العمر • محمد & ندى',
+    titleEn: 'Our Eternal Vow • Mohamed & Nada',
+    captionAr: 'نسأل الله أن يبارك لنا ويجمع بيننا في خير',
+    captionEn: 'May Allah bless our union in love and peace',
   },
   {
     id: 2,
     url: '/images/2.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'خاتم العهد',
-    titleEn: 'The Vow Rings',
+    titleAr: 'وخلقناكم أزواجاً • وثيقة المحبة',
+    titleEn: 'Marriage Contract & Fingerprints',
+    captionAr: 'توثيق عقد القران وبصمة القلبين • ٢٠ أغسطس ٢٠٢٦',
+    captionEn: 'Official Marriage Certificate & Heart Fingerprints',
   },
   {
     id: 3,
     url: '/images/3.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'لحظة الفرحة',
-    titleEn: 'Joyful Moments',
+    titleAr: 'دامت أيادينا متصلة على المودة',
+    titleEn: 'Hands Entwined In Love',
+    captionAr: 'يداً بيد نحو بداية جديدة وحياة سعيدة ملؤها التوفيق',
+    captionEn: 'Hand in hand towards a lifetime of happiness',
   },
   {
     id: 4,
     url: '/images/4.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'معاً إلى الأبد',
-    titleEn: 'Together Forever',
+    titleAr: 'فرحة البداية وباقة الورد وخاتم العمر',
+    titleEn: 'Celebration, Roses & The Ring',
+    captionAr: 'أجمل ابتسامة في أسعد لحظات العمر',
+    captionEn: 'Pure joy and celebration of our engagement',
   },
   {
     id: 5,
     url: '/images/5.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'تفاصيل أنيقة',
-    titleEn: 'Elegant Details',
-  },
-  {
-    id: 6,
-    url: '/images/6.jpg',
-    fallbackUrl: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80',
-    titleAr: 'حب وسلام',
-    titleEn: 'Love & Serenity',
+    titleAr: 'أجمل اللحظات والذكريات معاً',
+    titleEn: 'Cherished Memories Together',
+    captionAr: 'كل لحظة معك هي بداية لذكرى لا تُنسى',
+    captionEn: 'Every moment together is a memory to cherish',
   },
 ];
 
@@ -1166,37 +1164,91 @@ export default function WeddingInvitation() {
               <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
             </div>
 
-            <p className="text-sm md:text-base text-[#5E5E5C] leading-relaxed font-medium">
-              {isAr
-                ? 'يسعدنا ويشرفنا دعوتكم لتشاركونا أجمل لحظات العمر بفرحتنا باحتفال زفافنا'
-                : 'Together with our families, we joyfully invite you to celebrate our union'}
-            </p>
+            {/* The Sweet Invitation Words (كلام حلو وراقي) */}
+            <div className="my-6 p-6 md:p-7 rounded-3xl bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#FAF5EB] border-2 border-[#D4AF37]/35 shadow-[0_10px_35px_rgba(212,175,55,0.12)] relative overflow-hidden text-center">
+              <div className="flex items-center justify-center gap-2 mb-3 text-[#AA771C]">
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#8C7326]">
+                  {isAr ? 'دعـوة فـرح' : 'Celebration of Love'}
+                </span>
+                <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+              </div>
+
+              <p
+                style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                className="text-lg md:text-xl text-[#735C00] font-bold leading-relaxed mb-3"
+              >
+                {isAr
+                  ? '« في ليلةٍ من ليالي العمر تُنسج فيها خيوط الفرح، ونبدأ معاً أولى خطوات الحلم.. »'
+                  : '« On a magical night woven with joy, we begin our lifelong dream together.. »'}
+              </p>
+
+              <p className="text-sm md:text-base text-[#5E5E5C] leading-relaxed font-medium max-w-lg mx-auto">
+                {isAr
+                  ? 'يسعدنا ويشرفنا دعوتكم لتشاركونا فرحة العمر وجمال البدايات، فحضوركم يضيء ليلتنا ويزيد حفلنا بهجةً ونوراً، وبدعواتكم الصادقة تطيب أيامنا وتكتمل سعادتنا.'
+                  : 'Together with our families, we joyfully invite you to celebrate our union. Your presence and heartfelt blessings will make our special celebration truly complete.'}
+              </p>
+            </div>
           </motion.div>
         </section>
 
-        {/* Couple Names Section */}
-        <section className="text-center py-8">
+        {/* Couple Names & Featured Portrait Section */}
+        <section className="text-center py-6">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="relative inline-block px-8 py-6 rounded-3xl bg-gradient-to-b from-[#FAF8F5] to-[#F3EEE3] border border-[#D4AF37]/30 shadow-[0_10px_30px_rgba(212,175,55,0.12)]"
+            className="relative inline-block w-full max-w-md mx-auto px-6 py-8 rounded-3xl bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] shadow-[0_14px_45px_rgba(212,175,55,0.2)]"
           >
-            <span className="text-xs text-[#8C7326] tracking-[0.3em] uppercase block mb-2 font-bold">
-              {isAr ? 'زفاف' : 'The Wedding of'}
+            {/* Arched / Circular Framed Real Portrait of the Couple */}
+            <div className="relative mx-auto mb-5 w-44 h-44 md:w-52 md:h-52">
+              <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] to-[#AA771C] animate-pulse opacity-75" />
+              <div
+                className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl cursor-pointer group"
+                onClick={() => setActiveImage(0)}
+                title={isAr ? 'اضغط لعرض الصورة بحجم كامل' : 'Click to view full size'}
+              >
+                <img
+                  src="/images/1.jpg"
+                  alt="Mohamed & Nada"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
+                  <span>{isAr ? 'عرض الصورة 🔍' : 'View 🔍'}</span>
+                </div>
+              </div>
+              <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#735C00] text-white text-[11px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5 border border-[#FFDF73]/50">
+                <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
+                <span>{isAr ? 'محمد & ندى' : 'Mohamed & Nada'}</span>
+                <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
+              </div>
+            </div>
+
+            <span className="text-xs text-[#8C7326] tracking-[0.3em] uppercase block mb-1 font-bold">
+              {isAr ? 'حفل زفاف' : 'The Wedding of'}
             </span>
 
             <h1
               style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
-              className="text-4xl md:text-6xl font-extrabold text-[#735C00] leading-tight mb-2"
+              className="text-4xl md:text-5xl font-extrabold text-[#735C00] leading-tight mb-2"
             >
               {isAr ? 'محمد & ندى' : 'Mohamed & Nada'}
             </h1>
 
-            <p className="text-sm md:text-base italic text-[#5E5E5C] tracking-wide">
-              {isAr ? 'معاً إلى الأبد بإذن الله' : 'Together, Forever'}
+            <p
+              style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
+              className="text-sm md:text-base text-[#5E5E5C] font-semibold italic tracking-wide"
+            >
+              {isAr ? '« بارك الله لنا وبارك علينا وجمع بيننا في خير »' : 'Together, Forever Under God\'s Grace'}
             </p>
+
+            {/* Katb Ketab Commemorative Badge */}
+            <div className="mt-5 pt-3.5 border-t border-[#D4AF37]/25 flex items-center justify-center gap-2 text-xs font-bold text-[#8C7326]">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>{isAr ? 'تم بحمد الله عقد القران • ٢٠ أغسطس ٢٠٢٦' : 'Ceremony • August 20, 2026'}</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+            </div>
           </motion.div>
         </section>
 
@@ -1383,35 +1435,49 @@ export default function WeddingInvitation() {
             </p>
           </div>
 
-          {/* Photos Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-            {GALLERY_IMAGES.map((img, idx) => (
-              <motion.div
-                key={img.id}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setActiveImage(idx)}
-                className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer bg-[#F3EEE3] border border-[#D4AF37]/30 shadow-sm"
-              >
-                <img
-                  src={img.url}
-                  alt={isAr ? img.titleAr : img.titleEn}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                  onError={(e) => {
-                    const fallback = img.fallbackUrl;
-                    if (fallback && e.currentTarget.src !== fallback) {
-                      e.currentTarget.src = fallback;
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                  <span className="text-white text-xs font-medium">
-                    {isAr ? img.titleAr : img.titleEn}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+          {/* Photos Grid - 5 Items Luxury Mosaic */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
+            {GALLERY_IMAGES.map((img, idx) => {
+              // Layout classes for responsive 5-item mosaic
+              const layoutClasses =
+                idx === 0
+                  ? 'col-span-2 md:col-span-3 aspect-[4/3]' // Couple Portrait
+                  : idx === 1
+                  ? 'col-span-2 md:col-span-3 aspect-[4/3]' // Marriage Certificate
+                  : 'col-span-1 md:col-span-2 aspect-square'; // 3 bottom items
+
+              return (
+                <motion.div
+                  key={img.id}
+                  whileHover={{ scale: 1.025, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveImage(idx)}
+                  className={`group relative rounded-2xl overflow-hidden cursor-pointer bg-[#F3EEE3] border-2 border-[#D4AF37]/35 shadow-md hover:shadow-xl transition-all duration-300 ${layoutClasses}`}
+                >
+                  <img
+                    src={img.url}
+                    alt={isAr ? img.titleAr : img.titleEn}
+                    className={`w-full h-full object-cover ${
+                      idx === 0 ? 'object-top' : 'object-center'
+                    } transition-transform duration-700 group-hover:scale-105`}
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5">
+                    <span className="text-white text-xs md:text-sm font-bold drop-shadow">
+                      {isAr ? img.titleAr : img.titleEn}
+                    </span>
+                    <span className="text-white/80 text-[10px] md:text-xs mt-0.5 line-clamp-1">
+                      {isAr ? img.captionAr : img.captionEn}
+                    </span>
+                  </div>
+                  {/* Subtle Corner Badge */}
+                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/45 backdrop-blur-sm border border-white/20 text-white/90 text-[10px] flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                    <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
+                    <span>{idx + 1}</span>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
 
@@ -1430,7 +1496,7 @@ export default function WeddingInvitation() {
               <button
                 onClick={() => setActiveImage(null)}
                 aria-label="Close"
-                className="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10"
+                className="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10 z-10"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1441,7 +1507,7 @@ export default function WeddingInvitation() {
                   setActiveImage((prev) => (prev! > 0 ? prev! - 1 : GALLERY_IMAGES.length - 1));
                 }}
                 aria-label="Previous image"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10 z-10"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -1452,30 +1518,35 @@ export default function WeddingInvitation() {
                   setActiveImage((prev) => (prev! < GALLERY_IMAGES.length - 1 ? prev! + 1 : 0));
                 }}
                 aria-label="Next image"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10 z-10"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
 
               <div
-                className="max-w-3xl max-h-[85vh] rounded-2xl overflow-hidden border-2 border-[#D4AF37]/50 shadow-2xl"
+                className="max-w-3xl w-full max-h-[90vh] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-[#141414] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
-                <img
-                  src={GALLERY_IMAGES[activeImage].url}
-                  alt={isAr ? GALLERY_IMAGES[activeImage].titleAr : GALLERY_IMAGES[activeImage].titleEn}
-                  className="w-full h-full max-h-[80vh] object-contain"
-                  onError={(e) => {
-                    const fallback = GALLERY_IMAGES[activeImage].fallbackUrl;
-                    if (fallback && e.currentTarget.src !== fallback) {
-                      e.currentTarget.src = fallback;
-                    }
-                  }}
-                />
-                <div className="bg-[#1A1A1A] text-center py-2 text-white/90 text-sm">
-                  {isAr
-                    ? GALLERY_IMAGES[activeImage].titleAr
-                    : GALLERY_IMAGES[activeImage].titleEn}
+                <div className="relative flex-1 flex items-center justify-center p-2 bg-black/50 overflow-hidden min-h-[300px]">
+                  <img
+                    src={GALLERY_IMAGES[activeImage].url}
+                    alt={isAr ? GALLERY_IMAGES[activeImage].titleAr : GALLERY_IMAGES[activeImage].titleEn}
+                    className="max-w-full max-h-[70vh] object-contain rounded-xl"
+                  />
+                </div>
+                <div className="bg-gradient-to-b from-[#1C1C1C] to-[#121212] px-6 py-4 border-t border-[#D4AF37]/30 text-center">
+                  <div className="flex items-center justify-between text-xs text-[#D4AF37] mb-1 font-bold">
+                    <span>{isAr ? `صورة ${activeImage + 1} من ${GALLERY_IMAGES.length}` : `Photo ${activeImage + 1} of ${GALLERY_IMAGES.length}`}</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#FFDF73]" />
+                  </div>
+                  <h4 className="text-white text-base md:text-lg font-bold">
+                    {isAr ? GALLERY_IMAGES[activeImage].titleAr : GALLERY_IMAGES[activeImage].titleEn}
+                  </h4>
+                  {GALLERY_IMAGES[activeImage].captionAr && (
+                    <p className="text-white/70 text-xs md:text-sm mt-1">
+                      {isAr ? GALLERY_IMAGES[activeImage].captionAr : GALLERY_IMAGES[activeImage].captionEn}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
