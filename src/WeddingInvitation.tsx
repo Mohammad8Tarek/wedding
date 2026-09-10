@@ -546,18 +546,35 @@ export default function WeddingInvitation() {
     }, 1200);
   }, [isOpeningAnimation, isEnvelopeOpen, startAudio]);
 
-  // Share on WhatsApp
-  const handleWhatsAppShare = () => {
-    const text = isAr
-      ? '💍 بارك الله لهما وبارك عليهما واجمع بينهما في خير .. يسعدنا ويشرفنا دعوتكم لحضور حفل زفافنا:\n' +
-        window.location.href
-      : '💍 We joyfully invite you to celebrate our wedding!\n' + window.location.href;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  // Share on WhatsApp / Mobile Native Share
+  const handleWhatsAppShare = async () => {
+    const cleanUrl = 'https://wedding-mohamed-nada.vercel.app/';
+    const shareTitle = isAr ? '💍 دعوة زفاف خاصة | محمد & ندى' : '💍 Wedding Invitation | Mohamed & Nada';
+    const shareText = isAr
+      ? 'يسعدنا ويشرفنا دعوتكم لحضور حفل زفافنا .. دامت دياركم عامرة بالأفراح 🤍✨'
+      : 'We cordially invite you to celebrate our wedding!';
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: cleanUrl,
+        });
+        return;
+      } catch {
+        // Fallback to WhatsApp URL if user dismisses native sheet
+      }
+    }
+
+    const fullMessage = `${shareTitle}\n${shareText}\n${cleanUrl}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`, '_blank');
   };
 
   // Copy Link
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const cleanUrl = 'https://wedding-mohamed-nada.vercel.app/';
+    navigator.clipboard.writeText(cleanUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
