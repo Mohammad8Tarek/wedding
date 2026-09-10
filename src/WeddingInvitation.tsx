@@ -546,19 +546,13 @@ export default function WeddingInvitation() {
     }, 1200);
   }, [isOpeningAnimation, isEnvelopeOpen, startAudio]);
 
-  // Share on WhatsApp / Mobile Native Share
+  // Share on WhatsApp / Mobile Native Share (Sends ONLY the clean URL so WhatsApp automatically generates the rich card with photo and details)
   const handleWhatsAppShare = async () => {
     const cleanUrl = 'https://wedding-mohamed-nada.vercel.app/';
-    const shareTitle = isAr ? '💍 دعوة زفاف خاصة | محمد & ندى' : '💍 Wedding Invitation | Mohamed & Nada';
-    const shareText = isAr
-      ? 'يسعدنا ويشرفنا دعوتكم لحضور حفل زفافنا .. دامت دياركم عامرة بالأفراح 🤍✨'
-      : 'We cordially invite you to celebrate our wedding!';
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: shareTitle,
-          text: shareText,
           url: cleanUrl,
         });
         return;
@@ -567,8 +561,7 @@ export default function WeddingInvitation() {
       }
     }
 
-    const fullMessage = `${shareTitle}\n${shareText}\n${cleanUrl}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(fullMessage)}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(cleanUrl)}`, '_blank');
   };
 
   // Copy Link
