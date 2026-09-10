@@ -153,14 +153,15 @@ const AmbientGoldParticles: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
-    const particleCount = 45;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const particleCount = isMobile ? 22 : 40;
     const particles = Array.from({ length: particleCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * 2.5 + 0.8,
-      speedY: Math.random() * 0.4 + 0.15,
-      speedX: (Math.random() - 0.5) * 0.3,
-      opacity: Math.random() * 0.6 + 0.2,
+      size: Math.random() * 2 + 0.8,
+      speedY: Math.random() * 0.35 + 0.12,
+      speedX: (Math.random() - 0.5) * 0.2,
+      opacity: Math.random() * 0.5 + 0.2,
       pulse: Math.random() * Math.PI * 2,
     }));
 
@@ -179,12 +180,10 @@ const AmbientGoldParticles: React.FC = () => {
         if (p.x < -10) p.x = width + 10;
         if (p.x > width + 10) p.x = -10;
 
-        const currentOpacity = p.opacity + Math.sin(p.pulse) * 0.2;
+        const currentOpacity = Math.max(0.08, p.opacity + Math.sin(p.pulse) * 0.15);
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(212, 175, 55, ${Math.max(0.1, currentOpacity)})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = 'rgba(212, 175, 55, 0.6)';
+        ctx.fillStyle = `rgba(212, 175, 55, ${currentOpacity})`;
         ctx.fill();
       });
 
@@ -202,7 +201,7 @@ const AmbientGoldParticles: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-70"
+      className="fixed inset-0 pointer-events-none z-0 opacity-60"
     />
   );
 };
@@ -543,7 +542,7 @@ export default function WeddingInvitation() {
     window.scrollTo({ top: 0, behavior: 'instant' });
     setTimeout(() => {
       setIsEnvelopeOpen(true);
-    }, 1200);
+    }, 1250);
   }, [isOpeningAnimation, isEnvelopeOpen, startAudio]);
 
   // Share on WhatsApp / Mobile Native Share (Sends ONLY the clean URL so WhatsApp automatically generates the rich card with photo and details)
@@ -603,8 +602,8 @@ export default function WeddingInvitation() {
         loop
       />
 
-      {/* Ambient Canvas Particles */}
-      <AmbientGoldParticles />
+      {/* Ambient Canvas Particles - Mounted only after envelope opens for 60fps mobile opening */}
+      {isEnvelopeOpen && <AmbientGoldParticles />}
 
       {/* Royal Ornate Frame Around Entire Invitation */}
       <RoyalOrnateFrame />
@@ -653,18 +652,22 @@ export default function WeddingInvitation() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05, transition: { duration: 0.7, ease: 'easeInOut' } }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-hidden"
+            exit={{
+              opacity: 0,
+              scale: 1.03,
+              transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] },
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none overflow-hidden touch-manipulation"
           >
             {/* Royal Deep Burgundy / Wine Velvet Backdrop */}
             <div
-              className="absolute inset-0 transition-transform duration-1000 scale-100"
+              className="absolute inset-0"
               style={{
                 background: 'radial-gradient(ellipse at 50% 45%, #4E0513 0%, #3B020B 35%, #260107 70%, #150004 100%)',
               }}
             />
 
-            {/* Subtle Gold Ambient Particle / Shimmer Backdrop Overlays */}
+            {/* Subtle Gold Ambient Shimmer Backdrop Overlays */}
             <div
               className="absolute inset-0 pointer-events-none opacity-40"
               style={{
@@ -699,14 +702,14 @@ export default function WeddingInvitation() {
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6 }}
-                className="text-center mb-6"
+                className="text-center mb-5"
               >
-                <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#260107]/85 backdrop-blur-md border border-[#D4AF37]/60 mb-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.5)]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73] animate-spin" style={{ animationDuration: '4s' }} />
+                <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#260107]/85 border border-[#D4AF37]/60 mb-2.5 shadow-[0_4px_16px_rgba(0,0,0,0.5)]">
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73]" />
                   <span className="text-[11px] font-bold text-[#FFE885] tracking-widest uppercase">
                     {isAr ? 'بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ' : 'In The Name of God'}
                   </span>
-                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73] animate-spin" style={{ animationDuration: '4s' }} />
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFDF73]" />
                 </div>
 
                 <h2
@@ -722,27 +725,32 @@ export default function WeddingInvitation() {
 
               {/* 3D Envelope Wrapper */}
               <div
-                style={{ perspective: 1400 }}
-                className="relative w-full aspect-[16/11] max-w-[430px] flex items-center justify-center cursor-pointer"
+                style={{
+                  perspective: 1200,
+                  WebkitPerspective: 1200,
+                }}
+                className="relative w-full aspect-[16/11] max-w-[420px] flex items-center justify-center cursor-pointer select-none touch-manipulation active:scale-[0.99] transition-transform"
                 onClick={handleOpenEnvelope}
               >
                 {/* Envelope 3D Body */}
                 <motion.div
                   animate={
                     isOpeningAnimation
-                      ? { scale: 1.04, y: 15 }
-                      : { y: [0, -6, 0] }
+                      ? { scale: 1.02, y: 10 }
+                      : { y: [0, -5, 0] }
                   }
                   transition={
                     isOpeningAnimation
-                      ? { duration: 0.6 }
+                      ? { duration: 0.6, ease: [0.25, 1, 0.5, 1] }
                       : { repeat: Infinity, duration: 4, ease: 'easeInOut' }
                   }
-                  className="relative w-full h-full rounded-[24px] shadow-2xl overflow-visible"
+                  className="relative w-full h-full rounded-[24px] overflow-visible"
                   style={{
                     transformStyle: 'preserve-3d',
+                    WebkitTransformStyle: 'preserve-3d',
+                    willChange: 'transform',
                     boxShadow:
-                      '0 32px 64px -12px rgba(18, 1, 4, 0.85), 0 0 40px rgba(212, 175, 55, 0.25)',
+                      '0 28px 60px -12px rgba(18, 1, 4, 0.85), 0 0 35px rgba(212, 175, 55, 0.2)',
                   }}
                 >
                   {/* Outer Gold Leaf Border Piping Frame */}
@@ -781,15 +789,21 @@ export default function WeddingInvitation() {
                   <motion.div
                     animate={
                       isOpeningAnimation
-                        ? { y: -140, opacity: 1, scale: 1.04 }
-                        : { y: 0, opacity: 0.94 }
+                        ? { y: -135, opacity: 1, scale: 1.03 }
+                        : { y: 0, opacity: 0.95, scale: 1 }
                     }
-                    transition={{ duration: 0.85, delay: 0.35, ease: [0.25, 1, 0.5, 1] }}
-                    className="absolute inset-x-5 top-5 bottom-3 rounded-xl shadow-xl flex flex-col items-center justify-center p-4 text-center z-10 overflow-hidden"
+                    transition={{
+                      duration: 0.8,
+                      delay: 0.35,
+                      ease: [0.25, 1, 0.5, 1],
+                    }}
+                    className="absolute inset-x-4 top-4 bottom-3 rounded-xl shadow-xl flex flex-col items-center justify-center p-3 text-center z-10 overflow-hidden"
                     style={{
+                      willChange: 'transform',
+                      transform: 'translateZ(0)',
                       background: 'linear-gradient(180deg, #FFFDF7 0%, #FAF6EE 55%, #F3EBDD 100%)',
                       border: '2px solid #D4AF37',
-                      boxShadow: '0 12px 30px rgba(0,0,0,0.35), inset 0 0 15px rgba(212,175,55,0.12)',
+                      boxShadow: '0 12px 28px rgba(0,0,0,0.35), inset 0 0 15px rgba(212,175,55,0.12)',
                     }}
                   >
                     {/* Inner Gold Inset Frame with Flourishes */}
@@ -832,18 +846,17 @@ export default function WeddingInvitation() {
 
                   {/* Front Pocket Left Velvet Flap */}
                   <div
-                    className="absolute inset-0 pointer-events-none z-20"
+                    className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-[24px]"
                     style={{
                       clipPath: 'polygon(0 0, 0 100%, 50% 50%)',
                       background: 'linear-gradient(135deg, #4E0513 0%, #3B020B 60%, #260107 100%)',
-                      filter: 'drop-shadow(4px 0 8px rgba(0,0,0,0.45))',
                     }}
                   >
-                    {/* Left Flap Velvet Luster & Piping */}
+                    {/* Flap Luster & Piping */}
                     <div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 45%, rgba(0,0,0,0.4) 100%)',
                       }}
                     />
                     <div
@@ -851,25 +864,24 @@ export default function WeddingInvitation() {
                       style={{
                         clipPath: 'polygon(0 0, 50% 50%, 0 100%, 0 98%, 48% 50%, 0 2%)',
                         background: 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 50%, #AA771C 100%)',
-                        opacity: 0.6,
+                        opacity: 0.65,
                       }}
                     />
                   </div>
 
                   {/* Front Pocket Right Velvet Flap */}
                   <div
-                    className="absolute inset-0 pointer-events-none z-20"
+                    className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-[24px]"
                     style={{
                       clipPath: 'polygon(100% 0, 100% 100%, 50% 50%)',
                       background: 'linear-gradient(225deg, #4E0513 0%, #3B020B 60%, #260107 100%)',
-                      filter: 'drop-shadow(-4px 0 8px rgba(0,0,0,0.45))',
                     }}
                   >
-                    {/* Right Flap Velvet Luster & Piping */}
+                    {/* Flap Luster & Piping */}
                     <div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
+                        background: 'linear-gradient(225deg, rgba(255,255,255,0.08) 0%, transparent 45%, rgba(0,0,0,0.4) 100%)',
                       }}
                     />
                     <div
@@ -877,27 +889,32 @@ export default function WeddingInvitation() {
                       style={{
                         clipPath: 'polygon(100% 0, 50% 50%, 100% 100%, 100% 98%, 52% 50%, 100% 2%)',
                         background: 'linear-gradient(225deg, #BF953F 0%, #FCF6BA 50%, #AA771C 100%)',
-                        opacity: 0.6,
+                        opacity: 0.65,
                       }}
                     />
                   </div>
 
                   {/* Front Pocket Bottom Velvet Flap */}
                   <div
-                    className="absolute inset-0 pointer-events-none z-20"
+                    className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-[24px]"
                     style={{
                       clipPath: 'polygon(0 100%, 100% 100%, 50% 45%)',
-                      background: 'linear-gradient(0deg, #260107 0%, #3B020B 40%, #4E0513 100%)',
-                      filter: 'drop-shadow(0 -4px 10px rgba(0,0,0,0.5))',
+                      background: 'linear-gradient(0deg, #200106 0%, #35020A 40%, #4A0512 100%)',
                     }}
                   >
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(0deg, rgba(0,0,0,0.3) 0%, transparent 60%)',
+                      }}
+                    />
                     {/* Gold Leaf Chevron Border Piping on Bottom Flap */}
                     <div
                       className="absolute inset-0"
                       style={{
                         clipPath: 'polygon(0 100%, 100% 100%, 50% 45%, 49% 47%, 98% 99%, 2% 99%)',
                         background: 'linear-gradient(90deg, #D4AF37 0%, #FFDF73 50%, #AA771C 100%)',
-                        opacity: 0.75,
+                        opacity: 0.8,
                       }}
                     />
                   </div>
@@ -905,7 +922,7 @@ export default function WeddingInvitation() {
                   {/* Royal Gold Velvet Silk Ribbon (Vertical) */}
                   <motion.div
                     animate={{ opacity: isOpeningAnimation ? 0 : 1 }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.3 }}
                     className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-9 pointer-events-none z-25"
                     style={{
                       background:
@@ -922,25 +939,27 @@ export default function WeddingInvitation() {
                       rotateX: isOpeningAnimation ? -180 : 0,
                     }}
                     transition={{
-                      duration: 0.7,
-                      ease: [0.4, 0, 0.2, 1],
+                      duration: 0.75,
+                      ease: [0.4, 0.0, 0.2, 1],
                     }}
                     style={{
                       transformOrigin: 'top center',
                       transformStyle: 'preserve-3d',
-                      zIndex: isOpeningAnimation ? 5 : 30,
+                      WebkitTransformStyle: 'preserve-3d',
+                      willChange: 'transform',
+                      zIndex: isOpeningAnimation ? 5 : 32,
                     }}
                     className="absolute inset-x-0 top-0 h-full pointer-events-none"
                   >
                     {/* Flap Outer Front Face (Burgundy Velvet Cardstock) */}
                     <div
-                      className="absolute inset-0"
+                      className="absolute inset-0 overflow-hidden"
                       style={{
+                        transform: 'translateZ(1px)',
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
                         clipPath: 'polygon(0 0, 100% 0, 50% 55%)',
-                        background: 'linear-gradient(180deg, #5C0B1B 0%, #4E0513 50%, #3B020B 100%)',
-                        filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))',
+                        background: 'linear-gradient(180deg, #5C0B1B 0%, #4E0513 50%, #38020A 100%)',
                       }}
                     >
                       {/* Gold Leaf Piping on Chevron Edges */}
@@ -955,21 +974,20 @@ export default function WeddingInvitation() {
                       <div
                         className="absolute inset-0"
                         style={{
-                          background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%, rgba(0,0,0,0.35) 100%)',
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
                         }}
                       />
                     </div>
 
                     {/* Flap Inner Lining Face (Warm Royal Ivory with Delicate Gold Filigree) */}
                     <div
-                      className="absolute inset-0"
+                      className="absolute inset-0 overflow-hidden"
                       style={{
-                        transform: 'rotateX(180deg)',
+                        transform: 'rotateX(180deg) translateZ(1px)',
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
                         clipPath: 'polygon(0 0, 100% 0, 50% 55%)',
                         background: 'linear-gradient(180deg, #FFFDF7 0%, #FAF6EE 60%, #F0E6D2 100%)',
-                        filter: 'drop-shadow(0 -4px 12px rgba(0,0,0,0.4))',
                       }}
                     >
                       {/* Inner Gold Leaf Chevron Piping */}
@@ -1002,14 +1020,18 @@ export default function WeddingInvitation() {
                   <motion.div
                     animate={
                       isOpeningAnimation
-                        ? { scale: 1.35, opacity: 0, y: -25 }
-                        : { scale: [1, 1.04, 1] }
+                        ? { scale: 1.25, opacity: 0, y: -15 }
+                        : { scale: [1, 1.03, 1] }
                     }
                     transition={
                       isOpeningAnimation
-                        ? { duration: 0.4, ease: 'easeOut' }
+                        ? { duration: 0.35, ease: 'easeOut' }
                         : { repeat: Infinity, duration: 3.5, ease: 'easeInOut' }
                     }
+                    style={{
+                      willChange: 'transform, opacity',
+                      transform: 'translateZ(0)',
+                    }}
                     className="absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 cursor-pointer"
                   >
                     <div className="relative w-28 h-28 md:w-32 md:h-32 flex items-center justify-center">
@@ -1115,7 +1137,9 @@ export default function WeddingInvitation() {
                       <Sparkles className="absolute bottom-2 left-2 w-2.5 h-2.5 text-[#FFFBE0] animate-pulse pointer-events-none drop-shadow-[0_0_6px_rgba(255,245,185,0.9)]" style={{ animationDelay: '1s' }} />
 
                       {/* Pulsing Beacon Ring */}
-                      <span className="absolute -inset-2.5 rounded-full border border-[#FFE885]/70 animate-ping pointer-events-none opacity-50" />
+                      {!isOpeningAnimation && (
+                        <span className="absolute -inset-2.5 rounded-full border border-[#FFE885]/70 animate-ping pointer-events-none opacity-50" />
+                      )}
                       <span className="absolute -inset-1 rounded-full border border-[#D4AF37]/50 pointer-events-none" />
                     </div>
                   </motion.div>
@@ -1127,10 +1151,10 @@ export default function WeddingInvitation() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-7 text-center cursor-pointer"
+                className="mt-6 text-center cursor-pointer"
                 onClick={handleOpenEnvelope}
               >
-                <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#260107]/90 backdrop-blur-md border border-[#D4AF37]/70 text-xs md:text-sm font-bold text-[#FFE885] shadow-[0_6px_25px_rgba(0,0,0,0.5)] hover:scale-105 transition-all">
+                <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#260107]/90 border border-[#D4AF37]/70 text-xs md:text-sm font-bold text-[#FFE885] shadow-[0_6px_25px_rgba(0,0,0,0.5)] hover:scale-105 active:scale-95 transition-all">
                   <Heart className="w-4 h-4 text-[#FFDF73] fill-current animate-pulse" />
                   <span>{isAr ? 'إلمس لفتح الجواب وتشغيل الأغنية 🎶✨' : 'Touch to open invitation & play music 🎶✨'}</span>
                 </div>
