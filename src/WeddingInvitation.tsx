@@ -1432,62 +1432,66 @@ export default function WeddingInvitation() {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-[#D4AF37]/10 text-[#735C00] text-xs font-bold uppercase tracking-wider mb-2">
               <Camera className="w-3.5 h-3.5" />
-              {isAr ? 'معرض الذكريات والصور' : 'Our Memories'}
+              {isAr ? 'ستوديو ومعرض الصور' : 'Photo Studio & Memories'}
             </div>
             <h2
               style={{ fontFamily: isAr ? 'Cairo, sans-serif' : 'Playfair Display, serif' }}
               className="text-2xl md:text-3xl font-bold text-[#1A1A1A]"
             >
-              {isAr ? 'أجمل اللحظات' : 'Cherished Moments'}
+              {isAr ? 'أجمل اللحظات والذكريات' : 'Cherished Moments'}
             </h2>
             <p className="text-xs md:text-sm text-[#5E5E5C] mt-1">
-              {isAr ? 'اضغط على أي صورة لتكبيرها' : 'Click any photo to view in full size'}
+              {isAr ? 'اضغط على أي صورة لتكبيرها وعرضها بحجم الشاشة الكامل' : 'Click any photo to view in full size'}
             </p>
           </div>
 
-          {/* Photos Grid - 5 Items Luxury Mosaic */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4">
-            {GALLERY_IMAGES.map((img, idx) => {
-              // Layout classes for responsive 5-item mosaic
-              const layoutClasses =
-                idx === 0
-                  ? 'col-span-2 md:col-span-3 aspect-[4/3]' // Couple Portrait
-                  : idx === 1
-                  ? 'col-span-2 md:col-span-3 aspect-[4/3]' // Marriage Certificate
-                  : 'col-span-1 md:col-span-2 aspect-square'; // 3 bottom items
-
-              return (
-                <motion.div
-                  key={img.id}
-                  whileHover={{ scale: 1.025, y: -4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveImage(idx)}
-                  className={`group relative rounded-2xl overflow-hidden cursor-pointer bg-[#F3EEE3] border-2 border-[#D4AF37]/35 shadow-md hover:shadow-xl transition-all duration-300 ${layoutClasses}`}
-                >
+          {/* Photos Masonry - Complete Uncropped Images */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+            {GALLERY_IMAGES.map((img, idx) => (
+              <motion.div
+                key={img.id}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveImage(idx)}
+                className="break-inside-avoid mb-4 group relative rounded-2xl overflow-hidden cursor-pointer bg-gradient-to-b from-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37]/35 shadow-md hover:shadow-xl hover:border-[#D4AF37] transition-all duration-300 flex flex-col"
+              >
+                {/* Natural Image display - 100% full content, zero cropping */}
+                <div className="relative w-full overflow-hidden bg-[#FAF6EE]">
                   <img
                     src={img.url}
                     alt={isAr ? img.titleAr : img.titleEn}
-                    className={`w-full h-full object-cover ${
-                      idx === 0 ? 'object-top' : 'object-center'
-                    } transition-transform duration-700 group-hover:scale-105`}
+                    className="w-full h-auto block object-contain transition-transform duration-500 group-hover:scale-[1.02]"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5">
-                    <span className="text-white text-xs md:text-sm font-bold drop-shadow">
-                      {isAr ? img.titleAr : img.titleEn}
-                    </span>
-                    <span className="text-white/80 text-[10px] md:text-xs mt-0.5 line-clamp-1">
-                      {isAr ? img.captionAr : img.captionEn}
+
+                  {/* Subtle hover overlay */}
+                  <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="px-3.5 py-1.5 rounded-full bg-white/95 text-[#735C00] text-xs font-bold shadow-lg flex items-center gap-1.5 backdrop-blur-sm transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      {isAr ? 'تكبير وعرض كامل 🔍' : 'View Full Image 🔍'}
                     </span>
                   </div>
-                  {/* Subtle Corner Badge */}
-                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/45 backdrop-blur-sm border border-white/20 text-white/90 text-[10px] flex items-center gap-1 opacity-80 group-hover:opacity-100">
+
+                  {/* Corner Badge */}
+                  <div className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/55 backdrop-blur-sm border border-white/25 text-white text-[11px] font-semibold flex items-center gap-1 shadow">
                     <Sparkles className="w-2.5 h-2.5 text-[#FFDF73]" />
                     <span>{idx + 1}</span>
                   </div>
-                </motion.div>
-              );
-            })}
+                </div>
+
+                {/* Information Card Footer */}
+                <div className={`p-3.5 bg-gradient-to-b from-[#FFFDF9] to-[#F6EFE2] border-t border-[#D4AF37]/25 ${isAr ? 'text-right' : 'text-left'}`}>
+                  <h3 className="text-sm md:text-base font-bold text-[#1A1A1A] leading-snug">
+                    {isAr ? img.titleAr : img.titleEn}
+                  </h3>
+                  {img.captionAr && (
+                    <p className="text-xs text-[#6B665E] mt-1 leading-relaxed">
+                      {isAr ? img.captionAr : img.captionEn}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </section>
 
@@ -1500,13 +1504,13 @@ export default function WeddingInvitation() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
               onClick={() => setActiveImage(null)}
             >
               <button
                 onClick={() => setActiveImage(null)}
                 aria-label="Close"
-                className="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10 z-10"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white/80 hover:text-white p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1517,7 +1521,7 @@ export default function WeddingInvitation() {
                   setActiveImage((prev) => (prev! > 0 ? prev! - 1 : GALLERY_IMAGES.length - 1));
                 }}
                 aria-label="Previous image"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10 z-10"
+                className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-2.5 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -1528,20 +1532,20 @@ export default function WeddingInvitation() {
                   setActiveImage((prev) => (prev! < GALLERY_IMAGES.length - 1 ? prev! + 1 : 0));
                 }}
                 aria-label="Next image"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-3 rounded-full bg-white/10 z-10"
+                className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white p-2.5 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
 
               <div
-                className="max-w-3xl w-full max-h-[90vh] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-[#141414] flex flex-col"
+                className="max-w-4xl w-full max-h-[92vh] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-[#141414] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="relative flex-1 flex items-center justify-center p-2 bg-black/50 overflow-hidden min-h-[300px]">
+                <div className="relative flex-1 flex items-center justify-center p-2 sm:p-4 bg-black/60 overflow-hidden min-h-[300px]">
                   <img
                     src={GALLERY_IMAGES[activeImage].url}
                     alt={isAr ? GALLERY_IMAGES[activeImage].titleAr : GALLERY_IMAGES[activeImage].titleEn}
-                    className="max-w-full max-h-[70vh] object-contain rounded-xl"
+                    className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl"
                   />
                 </div>
                 <div className="bg-gradient-to-b from-[#1C1C1C] to-[#121212] px-6 py-4 border-t border-[#D4AF37]/30 text-center">
