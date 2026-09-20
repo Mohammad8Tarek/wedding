@@ -24,6 +24,8 @@ import {
   Navigation,
   MessageCircle,
   Crown,
+  CalendarPlus,
+  Bell,
 } from 'lucide-react';
 
 // ==================== DATA CONFIGURATION ====================
@@ -329,6 +331,7 @@ const RoyalOrnateFrame: React.FC = () => {
 // ==================== MAIN COMPONENT ====================
 export default function WeddingInvitation() {
   const [language, setLanguage] = useState<'ar' | 'en'>('ar');
+  const isAr = language === 'ar';
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
   const [isOpeningAnimation, setIsOpeningAnimation] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -340,6 +343,95 @@ export default function WeddingInvitation() {
   const userGestureFallbackRef = useRef<(() => void) | null>(null);
   const autoScrollRef = useRef<number | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
+  const [calendarModalEvent, setCalendarModalEvent] = useState<EventDetail | null>(null);
+
+  // Google Calendar URL generator
+  const getGoogleCalendarUrl = (event: EventDetail) => {
+    const isWedding = event.id === 'wedding';
+    const title = isWedding
+      ? (isAr ? 'حفل زفاف محمد & ندى 💍' : 'Wedding of Mohamed & Nada 💍')
+      : (isAr ? 'ليلة حنة محمد & ندى 🌸' : 'Henna Night of Mohamed & Nada 🌸');
+    const start = isWedding ? '20261011T170000Z' : '20261009T160000Z';
+    const end = isWedding ? '20261011T220000Z' : '20261009T200000Z';
+    const details = isWedding
+      ? (isAr
+          ? 'يسعدنا ويشرفنا حضوركم لمشاركتنا فرحة العمر في حفل زفاف محمد وندى بقاعة اسنو وايت 🤍 بارك الله لهما وبارك عليهما وجمع بينهما في خير.'
+          : 'Cordially invited to celebrate the wedding of Mohamed & Nada at Snow White Ballroom.')
+      : (isAr
+          ? 'نتشرف بحضوركم لمشاركتنا فرحة ليلة الحنة للعروسين محمد وندى 🤍✨'
+          : 'Cordially invited to the Henna celebration of Mohamed & Nada.');
+    const location = `${isAr ? event.venueAr : event.venueEn} - ${event.mapUrl || ''}`;
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      title
+    )}&dates=${start}/${end}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(
+      location
+    )}`;
+  };
+
+  // Apple Calendar & Outlook (.ics) file generator with 1-day advance alarm
+  const downloadIcs = (event: EventDetail) => {
+    const isWedding = event.id === 'wedding';
+    const title = isWedding
+      ? (isAr ? 'حفل زفاف محمد & ندى 💍' : 'Wedding of Mohamed & Nada 💍')
+      : (isAr ? 'ليلة حنة محمد & ندى 🌸' : 'Henna Night of Mohamed & Nada 🌸');
+    const start = isWedding ? '20261011T170000Z' : '20261009T160000Z';
+    const end = isWedding ? '20261011T220000Z' : '20261009T200000Z';
+    const details = isWedding
+      ? (isAr
+          ? 'يسعدنا ويشرفنا حضوركم لمشاركتنا فرحة العمر في حفل زفاف محمد وندى بقاعة اسنو وايت 🤍 بارك الله لهما وبارك عليهما وجمع بينهما في خير.'
+          : 'Cordially invited to celebrate the wedding of Mohamed & Nada at Snow White Ballroom.')
+      : (isAr
+          ? 'نتشرف بحضوركم لمشاركتنا فرحة ليلة الحنة للعروسين محمد وندى 🤍✨'
+          : 'Cordially invited to the Henna celebration of Mohamed & Nada.');
+    const location = `${isAr ? event.venueAr : event.venueEn}`;
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Mohamed and Nada Wedding//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `SUMMARY:${title}`,
+      `DESCRIPTION:${details}`,
+      `LOCATION:${location}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      'STATUS:CONFIRMED',
+      'BEGIN:VALARM',
+      'TRIGGER:-P1D',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${isAr ? 'تذكير بموعد الفرح غداً! 🎉' : 'Reminder: Wedding Celebration Tomorrow! 🎉'}`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${event.id}-mohamed-nada.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Festive Confetti trigger
+  const triggerConfetti = () => {
+    try {
+      confetti({
+        particleCount: 65,
+        spread: 70,
+        origin: { y: 0.65 },
+        colors: ['#D4AF37', '#FFDF73', '#B8860B', '#F3EAD7', '#FFFFFF'],
+      });
+    } catch {
+      // ignore
+    }
+  };
 
   // Initialize Lenis luxury momentum smooth scroll
   useEffect(() => {
@@ -367,8 +459,6 @@ export default function WeddingInvitation() {
       lenisRef.current = null;
     };
   }, []);
-
-  const isAr = language === 'ar';
 
   // Stop gentle auto-scroll
   const stopAutoScroll = useCallback(() => {
@@ -1400,6 +1490,17 @@ export default function WeddingInvitation() {
                 </div>
               ))}
             </div>
+
+            {/* Quick Add to Calendar Button under countdown */}
+            <div className="mt-5 pt-3.5 border-t border-[#D4AF37]/20 text-center">
+              <button
+                onClick={() => setCalendarModalEvent(EVENTS_DATA.find((e) => e.id === 'wedding') || EVENTS_DATA[0])}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFFDF7] via-[#FAF5EB] to-[#F5EAD4] hover:from-[#FAF5EB] hover:to-[#EEDCB9] text-[#735C00] text-xs font-bold transition-all border border-[#D4AF37]/50 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-95"
+              >
+                <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
+                <span>{isAr ? 'حفظ موعد الزفاف في تقويمي 🔔' : 'Save Wedding Date to My Calendar 🔔'}</span>
+              </button>
+            </div>
           </div>
         </section>
 
@@ -1517,13 +1618,13 @@ export default function WeddingInvitation() {
                           </div>
                         </div>
 
-                        {/* Action Button: Google Maps */}
-                        <div data-atropos-offset="4" className="md:shrink-0 flex items-center">
+                        {/* Action Buttons: Google Maps & Add to Calendar */}
+                        <div data-atropos-offset="4" className="md:shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
                           <a
                             href={googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs transition-all duration-200 shadow-sm ${
+                            className={`w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 shadow-sm ${
                               isMainWedding
                                 ? 'bg-[#735C00] hover:bg-[#594700] text-white'
                                 : 'border-2 border-[#D4AF37] text-[#735C00] hover:bg-[#D4AF37] hover:text-white'
@@ -1533,6 +1634,14 @@ export default function WeddingInvitation() {
                             <span>{isAr ? 'الموقع على الخريطة' : 'Open in Google Maps'}</span>
                             <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                           </a>
+
+                          <button
+                            onClick={() => setCalendarModalEvent(event)}
+                            className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#FFFDF7] to-[#FAF5EB] hover:from-[#FAF5EB] hover:to-[#F3EAD7] text-[#735C00] border border-[#D4AF37]/50 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] active:scale-95"
+                          >
+                            <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
+                            <span>{isAr ? 'أضف لمفكرتي / تقويمي' : 'Add to Calendar'}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1681,6 +1790,130 @@ export default function WeddingInvitation() {
                   )}
                 </div>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ========================================================= */}
+        {/* CALENDAR MODAL (إضافة لتقويم الموبايل) */}
+        {/* ========================================================= */}
+        <AnimatePresence>
+          {calendarModalEvent !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+              onClick={() => setCalendarModalEvent(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="relative max-w-md w-full rounded-3xl bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] p-6 sm:p-8 shadow-[0_20px_50px_rgba(212,175,55,0.25)] text-center overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setCalendarModalEvent(null)}
+                  aria-label="Close"
+                  className="absolute top-4 right-4 sm:top-5 sm:right-5 text-[#8C7326] hover:text-[#1A1A1A] p-2 rounded-full bg-[#D4AF37]/10 hover:bg-[#D4AF37]/25 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                {/* Modal Icon Badge */}
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-[#D4AF37]/20 to-[#FFDF73]/40 border border-[#D4AF37]/40 flex items-center justify-center text-[#735C00] shadow-sm">
+                  <CalendarPlus className="w-8 h-8 text-[#997A15]" />
+                </div>
+
+                <span className="text-[11px] font-bold tracking-[0.2em] text-[#8C7326] uppercase bg-[#D4AF37]/15 px-3.5 py-1 rounded-full inline-block mb-2">
+                  {isAr ? 'حفظ الموعد في المفكرة' : 'Add to Calendar'}
+                </span>
+
+                <h3
+                  style={{ fontFamily: isAr ? 'Cairo, sans-serif' : 'Playfair Display, serif' }}
+                  className="text-xl sm:text-2xl font-bold text-[#1A1A1A] mb-2"
+                >
+                  {isAr ? calendarModalEvent.titleAr : calendarModalEvent.titleEn}
+                </h3>
+
+                {/* Event Details Pill */}
+                <div className="bg-[#FAF6EE] rounded-2xl p-3 mb-5 border border-[#D4AF37]/25 text-xs text-[#5E5E5C] space-y-1.5">
+                  <div className="flex items-center justify-center gap-2 font-semibold text-[#735C00]">
+                    <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{isAr ? calendarModalEvent.dateAr : calendarModalEvent.dateEn}</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-[#735C00]">
+                    <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{isAr ? calendarModalEvent.timeAr : calendarModalEvent.timeEn}</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-[#6B665E]">
+                    <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{isAr ? calendarModalEvent.venueAr : calendarModalEvent.venueEn}</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#6B665E] mb-5 leading-relaxed">
+                  {isAr
+                    ? 'اختر تقويم جهازك المفضل لحفظ الموعد مع تذكير تلقائي مسبق قبل الحفل'
+                    : 'Select your preferred calendar to save the date with an automated reminder'}
+                </p>
+
+                {/* Calendar Options */}
+                <div className="space-y-3">
+                  {/* Google Calendar Option */}
+                  <a
+                    href={getGoogleCalendarUrl(calendarModalEvent)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      triggerConfetti();
+                      setTimeout(() => setCalendarModalEvent(null), 900);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white hover:bg-[#FAF7F0] border-2 border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#1A1A1A] font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center border border-red-200 shrink-0">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19.5 3h-1V1.5a.75.75 0 00-1.5 0V3h-10V1.5a.75.75 0 00-1.5 0V3h-1C3.57 3 2.25 4.32 2.25 5.95v13.1c0 1.63 1.32 2.95 2.95 2.95h14.3c1.63 0 2.95-1.32 2.95-2.95V5.95C22.45 4.32 21.13 3 19.5 3zm1.45 16.05c0 .8-.65 1.45-1.45 1.45H5.2c-.8 0-1.45-.65-1.45-1.45V8.25h17.2v10.8zm0-12.3H3.75V5.95c0-.8.65-1.45 1.45-1.45h1V6a.75.75 0 001.5 0V4.5h10V6a.75.75 0 001.5 0V4.5h1c.8 0 1.45.65 1.45 1.45v.8z"/>
+                        </svg>
+                      </div>
+                      <div className={isAr ? 'text-right' : 'text-left'}>
+                        <div className="font-bold text-[#1A1A1A]">Google Calendar</div>
+                        <div className="text-[11px] text-[#777] font-normal">
+                          {isAr ? 'حفظ مباشر في تقويم جوجل أندرويد والويب' : 'Direct add for Android & Web'}
+                        </div>
+                      </div>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-[#D4AF37] group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  </a>
+
+                  {/* Apple Calendar / Outlook (.ics) Option */}
+                  <button
+                    onClick={() => {
+                      triggerConfetti();
+                      downloadIcs(calendarModalEvent);
+                      setTimeout(() => setCalendarModalEvent(null), 900);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gradient-to-r from-[#735C00] via-[#8C7326] to-[#9E832F] hover:from-[#5E4B00] hover:to-[#735C00] text-white font-bold text-xs sm:text-sm shadow-md transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-white/20 text-white flex items-center justify-center shrink-0">
+                        <Bell className="w-5 h-5 text-[#FFE58F]" />
+                      </div>
+                      <div className={isAr ? 'text-right' : 'text-left'}>
+                        <div className="font-bold">Apple Calendar & Outlook</div>
+                        <div className="text-[11px] text-white/80 font-normal">
+                          {isAr ? 'ملف تقويم لهواتف آيفون وبرامج أوتلوك مع تذكير' : 'iPhone (.ics) file with 1-day reminder'}
+                        </div>
+                      </div>
+                    </div>
+                    <CalendarPlus className="w-4 h-4 text-[#FFDF73] group-hover:scale-110 transition-transform shrink-0" />
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
