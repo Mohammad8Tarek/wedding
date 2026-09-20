@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
-import Atropos from 'atropos/react';
-import 'atropos/css';
 import {
   MapPin,
   Calendar,
@@ -1396,66 +1394,61 @@ export default function WeddingInvitation() {
             whileInView={{ scale: 1, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
+            whileHover={{ y: -3 }}
             className="w-full max-w-md mx-auto"
           >
-            <Atropos
-              activeOffset={35}
-              shadow={false}
-              className="w-full rounded-3xl"
-            >
-              <div className="relative w-full px-6 py-8 rounded-3xl bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] shadow-[0_14px_45px_rgba(212,175,55,0.2)]">
-                {/* Arched / Circular Framed Real Portrait of the Couple */}
-                <div data-atropos-offset="5" className="relative mx-auto mb-5 w-44 h-44 md:w-52 md:h-52">
-                  <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] to-[#AA771C] animate-pulse opacity-75" />
-                  <div
-                    className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl cursor-pointer group"
-                    onClick={() => setActiveImage(0)}
-                    title={isAr ? 'اضغط لعرض الصورة بحجم كامل' : 'Click to view full size'}
-                  >
-                    <img
-                      src="/images/1.jpg"
-                      alt="Mohamed & Nada"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
-                      <span>{isAr ? 'عرض الصورة 🔍' : 'View 🔍'}</span>
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#735C00] text-white text-[11px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5 border border-[#FFDF73]/50">
-                    <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
-                    <span>{isAr ? 'محمد & ندى' : 'Mohamed & Nada'}</span>
-                    <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
+            <div className="relative w-full px-6 py-8 rounded-3xl bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] shadow-[0_14px_45px_rgba(212,175,55,0.2)]">
+              {/* Arched / Circular Framed Real Portrait of the Couple */}
+              <div className="relative mx-auto mb-5 w-44 h-44 md:w-52 md:h-52">
+                <div className="absolute -inset-2 rounded-full bg-gradient-to-tr from-[#BF953F] via-[#FCF6BA] to-[#AA771C] animate-pulse opacity-75" />
+                <div
+                  className="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl cursor-pointer group"
+                  onClick={() => setActiveImage(0)}
+                  title={isAr ? 'اضغط لعرض الصورة بحجم كامل' : 'Click to view full size'}
+                >
+                  <img
+                    src="/images/1.jpg"
+                    alt="Mohamed & Nada"
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
+                    <span>{isAr ? 'عرض الصورة 🔍' : 'View 🔍'}</span>
                   </div>
                 </div>
-
-                <div data-atropos-offset="3">
-                  <span className="text-xs text-[#8C7326] tracking-[0.3em] uppercase block mb-1 font-bold">
-                    {isAr ? 'حفل زفاف' : 'The Wedding of'}
-                  </span>
-
-                  <h1
-                    style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                    className="text-4xl md:text-5xl font-extrabold text-[#735C00] leading-tight mb-2"
-                  >
-                    {isAr ? 'محمد & ندى' : 'Mohamed & Nada'}
-                  </h1>
-
-                  <p
-                    style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
-                    className="text-sm md:text-base text-[#5E5E5C] font-semibold italic tracking-wide"
-                  >
-                    {isAr ? '« بارك الله لنا وبارك علينا وجمع بيننا في خير »' : 'Together, Forever Under God\'s Grace'}
-                  </p>
-                </div>
-
-                {/* Katb Ketab Commemorative Badge */}
-                <div data-atropos-offset="1.5" className="mt-5 pt-3.5 border-t border-[#D4AF37]/25 flex items-center justify-center gap-2 text-xs font-bold text-[#8C7326]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>{isAr ? 'تم بحمد الله عقد القران • ٢٠ أغسطس ٢٠٢٦' : 'Ceremony • August 20, 2026'}</span>
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#735C00] text-white text-[11px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5 border border-[#FFDF73]/50">
+                  <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
+                  <span>{isAr ? 'محمد & ندى' : 'Mohamed & Nada'}</span>
+                  <Heart className="w-3 h-3 fill-current text-[#FFDF73]" />
                 </div>
               </div>
-            </Atropos>
+
+              <div>
+                <span className="text-xs text-[#8C7326] tracking-[0.3em] uppercase block mb-1 font-bold">
+                  {isAr ? 'حفل زفاف' : 'The Wedding of'}
+                </span>
+
+                <h1
+                  style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                  className="text-4xl md:text-5xl font-extrabold text-[#735C00] leading-tight mb-2"
+                >
+                  {isAr ? 'محمد & ندى' : 'Mohamed & Nada'}
+                </h1>
+
+                <p
+                  style={{ fontFamily: isAr ? 'Amiri, serif' : 'Playfair Display, serif' }}
+                  className="text-sm md:text-base text-[#5E5E5C] font-semibold italic tracking-wide"
+                >
+                  {isAr ? '« بارك الله لنا وبارك علينا وجمع بيننا في خير »' : 'Together, Forever Under God\'s Grace'}
+                </p>
+              </div>
+
+              {/* Katb Ketab Commemorative Badge */}
+              <div className="mt-5 pt-3.5 border-t border-[#D4AF37]/25 flex items-center justify-center gap-2 text-xs font-bold text-[#8C7326]">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>{isAr ? 'تم بحمد الله عقد القران • ٢٠ أغسطس ٢٠٢٦' : 'Ceremony • August 20, 2026'}</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              </div>
+            </div>
           </motion.div>
         </section>
 
@@ -1543,109 +1536,103 @@ export default function WeddingInvitation() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.15 }}
-                  className="rounded-2xl"
+                  whileHover={{ y: -3 }}
+                  className="w-full rounded-2xl"
                 >
-                  <Atropos
-                    activeOffset={22}
-                    shadow={false}
-                    className="w-full rounded-2xl"
+                  <div
+                    className={`rounded-2xl p-6 md:p-8 transition-all duration-300 relative overflow-hidden ${
+                      isMainWedding
+                        ? 'bg-gradient-to-br from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] shadow-[0_12px_35px_rgba(212,175,55,0.18)]'
+                        : 'bg-white border border-[#D4AF37]/25 shadow-sm hover:shadow-md'
+                    }`}
                   >
-                    <div
-                      className={`rounded-2xl p-6 md:p-8 transition-all duration-300 relative overflow-hidden ${
-                        isMainWedding
-                          ? 'bg-gradient-to-br from-[#FFFFFF] via-[#FFFDF9] to-[#F9F5EC] border-2 border-[#D4AF37] shadow-[0_12px_35px_rgba(212,175,55,0.18)]'
-                          : 'bg-white border border-[#D4AF37]/25 shadow-sm hover:shadow-md'
-                      }`}
-                    >
-                      {/* Highlight Ribbon for main event */}
-                      {isMainWedding && (
-                        <div
-                          data-atropos-offset="2"
-                          className={`absolute top-0 ${
-                            isAr ? 'left-0 rounded-br-2xl' : 'right-0 rounded-bl-2xl'
-                          } bg-[#D4AF37] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 shadow-sm`}
+                    {/* Highlight Ribbon for main event */}
+                    {isMainWedding && (
+                      <div
+                        className={`absolute top-0 ${
+                          isAr ? 'left-0 rounded-br-2xl' : 'right-0 rounded-bl-2xl'
+                        } bg-[#D4AF37] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 shadow-sm`}
+                      >
+                        {isAr ? '★ الحفل الرئيسي' : '★ Main Event'}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="space-y-3 flex-1">
+                        {/* Badge */}
+                        <span className="inline-block text-[11px] font-bold text-[#8C7326] bg-[#D4AF37]/10 px-3 py-0.5 rounded-full">
+                          {isAr ? event.badgeAr : event.badgeEn}
+                        </span>
+
+                        {/* Title */}
+                        <h3
+                          style={{ fontFamily: isAr ? 'Cairo, sans-serif' : 'Playfair Display, serif' }}
+                          className="text-xl md:text-2xl font-bold text-[#1A1A1A]"
                         >
-                          {isAr ? '★ الحفل الرئيسي' : '★ Main Event'}
-                        </div>
-                      )}
+                          {isAr ? event.titleAr : event.titleEn}
+                        </h3>
 
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div data-atropos-offset="2" className="space-y-3 flex-1">
-                          {/* Badge */}
-                          <span className="inline-block text-[11px] font-bold text-[#8C7326] bg-[#D4AF37]/10 px-3 py-0.5 rounded-full">
-                            {isAr ? event.badgeAr : event.badgeEn}
-                          </span>
-
-                          {/* Title */}
-                          <h3
-                            style={{ fontFamily: isAr ? 'Cairo, sans-serif' : 'Playfair Display, serif' }}
-                            className="text-xl md:text-2xl font-bold text-[#1A1A1A]"
-                          >
-                            {isAr ? event.titleAr : event.titleEn}
-                          </h3>
-
-                          {/* Date & Time */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm text-[#404040]">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                              <span>{isAr ? event.dateAr : event.dateEn}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                              <span>{isAr ? event.timeAr : event.timeEn}</span>
-                            </div>
+                        {/* Date & Time */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm text-[#404040]">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                            <span>{isAr ? event.dateAr : event.dateEn}</span>
                           </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                            <span>{isAr ? event.timeAr : event.timeEn}</span>
+                          </div>
+                        </div>
 
-                          {/* Venue & Address */}
-                          <div className="pt-2 border-t border-[#D4AF37]/15 space-y-1">
-                            <div className="flex items-start gap-2 text-xs md:text-sm">
-                              <MapPin className="w-4 h-4 text-[#735C00] shrink-0 mt-0.5" />
-                              <div>
-                                <p className="font-bold text-[#1A1A1A]">
-                                  {isAr ? event.venueAr : event.venueEn}
-                                </p>
-                                <p className="text-xs text-[#5E5E5C]">
-                                  {isAr ? event.addressAr : event.addressEn}
-                                </p>
-                              </div>
-                            </div>
-
-                            {event.notesAr && (
-                              <p className="text-[11px] text-[#8C7326] italic pt-1">
-                                ℹ️ {isAr ? event.notesAr : event.notesEn}
+                        {/* Venue & Address */}
+                        <div className="pt-2 border-t border-[#D4AF37]/15 space-y-1">
+                          <div className="flex items-start gap-2 text-xs md:text-sm">
+                            <MapPin className="w-4 h-4 text-[#735C00] shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-bold text-[#1A1A1A]">
+                                {isAr ? event.venueAr : event.venueEn}
                               </p>
-                            )}
+                              <p className="text-xs text-[#5E5E5C]">
+                                {isAr ? event.addressAr : event.addressEn}
+                              </p>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Action Buttons: Google Maps & Add to Calendar */}
-                        <div data-atropos-offset="4" className="md:shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
-                          <a
-                            href={googleMapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 shadow-sm ${
-                              isMainWedding
-                                ? 'bg-[#735C00] hover:bg-[#594700] text-white'
-                                : 'border-2 border-[#D4AF37] text-[#735C00] hover:bg-[#D4AF37] hover:text-white'
-                            }`}
-                          >
-                            <MapPin className="w-4 h-4" />
-                            <span>{isAr ? 'الموقع على الخريطة' : 'Open in Google Maps'}</span>
-                            <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-                          </a>
-
-                          <button
-                            onClick={() => setCalendarModalEvent(event)}
-                            className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#FFFDF7] to-[#FAF5EB] hover:from-[#FAF5EB] hover:to-[#F3EAD7] text-[#735C00] border border-[#D4AF37]/50 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] active:scale-95"
-                          >
-                            <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
-                            <span>{isAr ? 'أضف لمفكرتي / تقويمي' : 'Add to Calendar'}</span>
-                          </button>
+                          {event.notesAr && (
+                            <p className="text-[11px] text-[#8C7326] italic pt-1">
+                              ℹ️ {isAr ? event.notesAr : event.notesEn}
+                            </p>
+                          )}
                         </div>
                       </div>
+
+                      {/* Action Buttons: Google Maps & Add to Calendar */}
+                      <div className="md:shrink-0 flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 shadow-sm ${
+                            isMainWedding
+                              ? 'bg-[#735C00] hover:bg-[#594700] text-white'
+                              : 'border-2 border-[#D4AF37] text-[#735C00] hover:bg-[#D4AF37] hover:text-white'
+                          }`}
+                        >
+                          <MapPin className="w-4 h-4" />
+                          <span>{isAr ? 'الموقع على الخريطة' : 'Open in Google Maps'}</span>
+                          <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                        </a>
+
+                        <button
+                          onClick={() => setCalendarModalEvent(event)}
+                          className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#FFFDF7] to-[#FAF5EB] hover:from-[#FAF5EB] hover:to-[#F3EAD7] text-[#735C00] border border-[#D4AF37]/50 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] active:scale-95"
+                        >
+                          <CalendarPlus className="w-4 h-4 text-[#D4AF37]" />
+                          <span>{isAr ? 'أضف لمفكرتي / تقويمي' : 'Add to Calendar'}</span>
+                        </button>
+                      </div>
                     </div>
-                  </Atropos>
+                  </div>
                 </motion.div>
               );
             })}
